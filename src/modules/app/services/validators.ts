@@ -92,7 +92,20 @@ export const parseExerciseJson = (
 
   if (!isString(exerciseId)) throw new Error("Falta 'exercise_id'.");
   if (!isString(type)) throw new Error("Falta 'type'.");
-  if (!isString(rawPayload)) throw new Error("Falta 'payload'.");
+
+  let payloadValue: string;
+  if (isString(rawPayload)) {
+    payloadValue = rawPayload;
+  } else if (Array.isArray(rawPayload)) {
+    if (!rawPayload.length) {
+      throw new Error("'payload' no puede ser un arreglo vacio.");
+    }
+    payloadValue = JSON.stringify(rawPayload);
+  } else if (typeof rawPayload === "object" && rawPayload !== null) {
+    payloadValue = JSON.stringify(rawPayload);
+  } else {
+    throw new Error("Falta 'payload'.");
+  }
 
   const normalized = normalizeType(type);
   if (normalized !== "analitico" && normalized !== "proposicion") {
@@ -103,7 +116,7 @@ export const parseExerciseJson = (
     exerciseId,
     attemptId: meta.attemptId,
     type: normalized as ExerciseType,
-    payload: rawPayload,
+    payload: payloadValue,
     createdAt: new Date().toISOString(),
     model: meta.model,
   };
