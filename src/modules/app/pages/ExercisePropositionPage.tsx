@@ -39,7 +39,6 @@ const StatementCard = ({ exerciseId, statement, index, onSubmit }: StatementCard
     <form className="card" onSubmit={handleSubmit}>
       <h3>Proposición {index + 1}</h3>
       <LatexRenderer content={statement} />
-      <pre className="code-block">{statement}</pre>
       <textarea
         value={value}
         onChange={(event) => {
@@ -86,12 +85,3 @@ export const ExercisePropositionPage = ({ attempt, exercise, onBack, onSubmit }:
     </AppShell>
   );
 };
-
-
-
-
-
-
-
-
-
