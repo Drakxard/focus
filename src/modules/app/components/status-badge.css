@@ -1,0 +1,24 @@
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.status-badge--guardado {
+  color: #8ef5b8;
+}
+
+.status-badge--guardando {
+  color: #ffd27f;
+}
+
+.status-badge--error {
+  color: #ff9b9b;
+}
+
+.status-badge--idle {
+  color: #d0cfe4;
+}
