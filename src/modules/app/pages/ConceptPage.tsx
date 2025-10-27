@@ -1,4 +1,5 @@
 import { AppShell } from "../components/Layout";
+import { LatexRenderer } from "../components/LatexRenderer";
 import { Attempt, AttemptFeedback } from "../types";
 
 interface ConceptPageProps {
@@ -59,7 +60,9 @@ export const ConceptPage = ({
         </div>
         {isConceptLoading ? <p>Cargando explicación…</p> : null}
         {conceptError ? <p className="error-text">{conceptError}</p> : null}
-        {conceptText ? <p>{conceptText}</p> : null}
+        {conceptText ? (
+          <LatexRenderer content={conceptText} fallback={<p>{conceptText}</p>} />
+        ) : null}
       </section>
       <section className="card horizontal">
         <div>

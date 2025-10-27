@@ -246,3 +246,16 @@ button.ghost {
 .katex-display > .katex {
   white-space: normal;
 }
+
+.math-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.math-text-inline {
+  white-space: normal;
+}
+
+.math-text .katex-display {
+  margin: 0.75rem 0;
+}

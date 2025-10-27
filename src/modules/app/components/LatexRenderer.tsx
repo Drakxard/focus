@@ -1,5 +1,5 @@
-import { ReactNode, useMemo } from "react";
-import katex from "katex";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import renderMathInElement from "katex/contrib/auto-render";
 import "katex/dist/katex.min.css";
 
 interface LatexRendererProps {
@@ -10,23 +10,46 @@ interface LatexRendererProps {
 }
 
 export const LatexRenderer = ({ content, inline = false, className, fallback }: LatexRendererProps) => {
-  const rendered = useMemo(() => {
+  const blockRef = useRef<HTMLDivElement | null>(null);
+  const inlineRef = useRef<HTMLSpanElement | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const defaultClass = inline ? "math-text-inline" : "math-text";
+
+  useEffect(() => {
+    const element = inline ? inlineRef.current : blockRef.current;
+    if (!element) return;
+
+    element.textContent = content;
+
     try {
-      return katex.renderToString(content, {
+      renderMathInElement(element, {
+        delimiters: [
+          { left: String.raw`\(`, right: String.raw`\)`, display: false },
+          { left: String.raw`\[`, right: String.raw`\]`, display: true },
+          { left: String.raw`$$`, right: String.raw`$$`, display: true },
+          { left: String.raw`$`, right: String.raw`$`, display: false },
+        ],
         throwOnError: false,
-        displayMode: !inline,
       });
+      setHasError(false);
     } catch (error) {
       console.warn("Latex render error", error);
-      return null;
+      setHasError(true);
     }
   }, [content, inline]);
 
-  if (!rendered) {
-    return <>{fallback ?? content}</>;
+  const FallbackElement = useMemo(() => (inline ? "span" : "div"), [inline]);
+
+  if (hasError) {
+    return (
+      <FallbackElement className={className ?? defaultClass}>
+        {fallback ?? <pre className="code-block">{content}</pre>}
+      </FallbackElement>
+    );
   }
 
-  const Element = inline ? "span" : "div";
-
-  return <Element className={className} dangerouslySetInnerHTML={{ __html: rendered }} />;
+  if (inline) {
+    return <span ref={inlineRef} className={className ?? defaultClass} />;
+  }
+  return <div ref={blockRef} className={className ?? defaultClass} />;
 };
