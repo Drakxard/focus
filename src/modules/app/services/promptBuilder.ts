@@ -6,18 +6,18 @@ interface FeedbackPromptInput {
   attemptId: string;
 }
 
-export const buildFeedbackPrompt = ({ themeTitle, userContent, attemptId }: FeedbackPromptInput) => `Analiza mi comprensión sobre "${themeTitle}" y devuelve exclusivamente el JSON pedido. Texto del estudiante entre comillas triples:
+export const buildFeedbackPrompt = ({ themeTitle, userContent, attemptId }: FeedbackPromptInput) => `Analiza mi comprensiÃ³n sobre "${themeTitle}" y devuelve exclusivamente el JSON pedido. Texto del estudiante entre comillas triples:
 """
 ${userContent}
 """
 
-Tu respuesta debe ser un JSON válido, sin texto adicional, con la siguiente estructura exacta y en español:
+Tu respuesta debe ser un JSON vÃ¡lido, sin texto adicional, con la siguiente estructura exacta y en espaÃ±ol:
 {
-  "feedback_id": "<identificador único>",
+  "feedback_id": "<identificador Ãºnico>",
   "attempt_id": "${attemptId}",
   "summary": "<resumen breve>",
   "errors": [
-    {"id": "e1", "point": "<punto débil en frase corta>", "counterexample": "<contraejemplo concreto>"}
+    {"id": "e1", "point": "<punto dÃ©bil en frase corta>", "counterexample": "<contraejemplo concreto>"}
   ],
   "suggestion": "<plan de mejora conciso>"
 }
@@ -29,7 +29,7 @@ interface ConceptPromptInput {
   themeTitle: string;
 }
 
-export const buildConceptPrompt = ({ feedback, themeTitle }: ConceptPromptInput) => `A partir de la siguiente crítica sobre el tema "${themeTitle}", redacta una explicación clara y breve que ayude a reforzar la teoría necesaria. Texto de la crítica:
+export const buildConceptPrompt = ({ feedback, themeTitle }: ConceptPromptInput) => `A partir de la siguiente crÃ­tica sobre el tema "${themeTitle}", redacta una explicaciÃ³n clara y breve que ayude a reforzar la teorÃ­a necesaria. Texto de la crÃ­tica:
 """
 Resumen: ${feedback.summary}
 Sugerencia: ${feedback.suggestion}
@@ -38,7 +38,7 @@ ${feedback.errors
   .map((error, index) => `${index + 1}. ${error.point} -> ${error.counterexample}`)
   .join("\n")}
 """
-Devuelve un párrafo en español que aclare los conceptos clave sin exceder 200 palabras.`;
+Devuelve un pÃ¡rrafo en espaÃ±ol que aclare los conceptos clave sin exceder 200 palabras.`;
 
 interface ExercisePromptInput {
   feedback: AttemptFeedback;
@@ -46,18 +46,18 @@ interface ExercisePromptInput {
   attempt: Attempt;
 }
 
-export const buildAnalyticalExercisePrompt = ({ feedback, conceptText, attempt }: ExercisePromptInput) => `Genera un ejercicio analítico en notación LaTeX que obligue al estudiante a aplicar la teoría detectada como débil en el intento ${attempt.latestVersion}. Crítica:
+export const buildAnalyticalExercisePrompt = ({ feedback, conceptText, attempt }: ExercisePromptInput) => `Genera un ejercicio analÃ­tico en notaciÃ³n LaTeX que obligue al estudiante a aplicar la teorÃ­a detectada como dÃ©bil en el intento ${attempt.latestVersion}. CrÃ­tica:
 Resumen: ${feedback.summary}
 Errores: ${feedback.errors
   .map((error, index) => `${index + 1}. ${error.point}`)
   .join("; ")}
-Teoría de apoyo:
+TeorÃ­a de apoyo:
 ${conceptText}
 
 Devuelve exclusivamente el JSON:
 {
-  "exercise_id": "<identificador único>",
-  "type": "analítico",
+  "exercise_id": "<identificador Ãºnico>",
+  "type": "analÃ­tico",
   "payload": "<enunciado en LaTeX escapado>"
 }
 `;
@@ -66,23 +66,23 @@ export const buildPropositionExercisePrompt = ({
   feedback,
   conceptText,
   attempt,
-}: ExercisePromptInput) => `Genera exactamente tres proposiciones distintas relacionadas con las debilidades detectadas en el intento ${attempt.latestVersion}. Una debe ser el recíproco, otra el inverso y otra el contrarrecíproco de una proposición base, pero no indiques cuál es cuál. Usa la crítica y la teoría de apoyo:
+}: ExercisePromptInput) => `Genera exactamente tres proposiciones distintas relacionadas con las debilidades detectadas en el intento ${attempt.latestVersion}. Una debe ser el recÃ­proco, otra el inverso y otra el contrarrecÃ­proco de una proposiciÃ³n base, pero no indiques cuÃ¡l es cuÃ¡l. Usa la crÃ­tica y la teorÃ­a de apoyo:
 Resumen: ${feedback.summary}
 Errores: ${feedback.errors
   .map((error, index) => `${index + 1}. ${error.point}`)
   .join("; ")}
-Teoría:
+TeorÃ­a:
 ${conceptText}
 
 Devuelve exclusivamente el JSON:
 {
-  "exercise_id": "<identificador único>",
-  "type": "proposición",
-  "payload": "<lista separada por saltos de línea o JSON con arreglo>"
+  "exercise_id": "<identificador Ãºnico>",
+  "type": "proposiciÃ³n",
+  "payload": "<lista separada por saltos de lÃ­nea o JSON con arreglo>"
 }
 `;
 
 export const buildManualPrompt = (type: ExerciseType, basePrompt: string) => {
   if (type === "analitico") return `${basePrompt}\n\nSigue el formato indicado y responde solo con JSON.`;
-  return `${basePrompt}\n\nRecuerda devolver únicamente el JSON solicitado.`;
-};
+  return `${basePrompt}\n\nRecuerda devolver Ãºnicamente el JSON solicitado.`;
+};

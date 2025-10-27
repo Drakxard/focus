@@ -56,7 +56,7 @@ export const AnalyzingPage = ({
       title="Analizando puntos clave..."
       left={
         <button type="button" onClick={onCancel}>
-          &lt;- Cancelar
+          ‚Üê Cancelar
         </button>
       }
       right={
@@ -68,9 +68,9 @@ export const AnalyzingPage = ({
       <section className="card">
         <p>
           {isLoading
-            ? "Consultando al modelo para obtener una crÌtica constructiva."
+            ? "Consultando al modelo para obtener una cr√≠tica constructiva."
             : error
-            ? "No fue posible completar el an·lisis."
+            ? "No fue posible completar el an√°lisis."
             : "Resultados listos."}
         </p>
         {error ? <p className="error-text">{errorMessage ?? error}</p> : null}
@@ -87,6 +87,10 @@ export const AnalyzingPage = ({
     </AppShell>
   );
 };
+
+
+
+
 
 
 

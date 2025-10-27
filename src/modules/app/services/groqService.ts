@@ -85,7 +85,7 @@ const chatCompletion = async ({
   const data = await handleResponse(response);
   const content = data?.choices?.[0]?.message?.content;
   if (!content || typeof content !== "string") {
-    throw new Error("La respuesta del modelo est· vacÌa.");
+    throw new Error("La respuesta del modelo est√° vac√≠a.");
   }
   return content.trim();
 };
@@ -99,7 +99,7 @@ export const requestFeedback = async (params: {
     apiKey: params.apiKey,
     model: params.model,
     systemPrompt:
-      "Eres un tutor experto que debe devolver exclusivamente JSON v·lido siguiendo las instrucciones del usuario.",
+      "Eres un tutor experto que debe devolver exclusivamente JSON v√°lido siguiendo las instrucciones del usuario.",
     userPrompt: params.prompt,
     temperature: 0.2,
     maxTokens: 1200,
@@ -115,7 +115,7 @@ export const requestConcept = async (params: {
   return chatCompletion({
     apiKey: params.apiKey,
     model: params.model,
-    systemPrompt: "Eres un docente que explica conceptos con precisiÛn y concisiÛn.",
+    systemPrompt: "Eres un docente que explica conceptos con precisi√≥n y concisi√≥n.",
     userPrompt: params.prompt,
     temperature: 0.4,
     maxTokens: 900,
@@ -139,6 +139,6 @@ export const requestExercise = async (params: {
     maxTokens: params.type === "proposicion" ? 1200 : 800,
     responseFormat: "json_object",
   });
-};
-
-
+};
+
+

@@ -23,7 +23,7 @@ export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }:
       return;
     }
     if (cleaned.length !== themes.length) {
-      setError("Todos los temas deben tener tÌtulo.");
+      setError("Todos los temas deben tener t√≠tulo.");
       return;
     }
     setError(null);
@@ -37,7 +37,7 @@ export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }:
       title="Ingresa Temas"
       left={
         <button type="button" onClick={onBack}>
-          &lt;- Volver
+          ‚Üê Volver
         </button>
       }
       right={<StatusBadge status={status} />}
@@ -51,7 +51,7 @@ export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }:
                 <input
                   value={theme}
                   maxLength={180}
-                  placeholder="TÌtulo del tema"
+                  placeholder="T√≠tulo del tema"
                   onChange={(event) =>
                     setThemes((prev) => {
                       const next = [...prev];
@@ -92,5 +92,8 @@ export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }:
     </AppShell>
   );
 };
+
+
+
 
 

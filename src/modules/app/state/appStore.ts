@@ -170,7 +170,7 @@ export const useAppStore = create<AppState>()(
         });
 
         if (!createdTheme) {
-          throw new Error("No se creó el tema");
+          throw new Error("No se creÃ³ el tema");
         }
         return createdTheme;
       },
@@ -237,7 +237,7 @@ export const useAppStore = create<AppState>()(
         }));
 
         if (!createdAttempt) {
-          throw new Error("No se creó el attempt");
+          throw new Error("No se creÃ³ el attempt");
         }
         return createdAttempt;
       },
@@ -426,6 +426,6 @@ export const useAppStore = create<AppState>()(
   )
 );
 
-export const getAttempt = (attemptId: string) => findAttempt(useAppStore.getState().topics, attemptId);
-
-
+export const getAttempt = (attemptId: string) => findAttempt(useAppStore.getState().topics, attemptId);
+
+

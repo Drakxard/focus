@@ -28,16 +28,16 @@ export const ConceptPage = ({
 }: ConceptPageProps) => {
   return (
     <AppShell
-      title="Repaso de crÌtica"
-      subtitle={`Intento ${attempt.latestVersion} ∑ Ciclos: ${attempt.cycles}/5`}
+      title="Repaso de cr√≠tica"
+      subtitle={`Intento ${attempt.latestVersion} ¬∑ Ciclos: ${attempt.cycles}/5`}
       left={
         <button type="button" onClick={onBack}>
-          &lt;- Volver
+          ‚Üê Volver
         </button>
       }
     >
       <section className="card">
-        <h2>CrÌtica</h2>
+        <h2>Cr√≠tica</h2>
         <p>
           <strong>{feedback.summary}</strong>
         </p>
@@ -52,35 +52,39 @@ export const ConceptPage = ({
       </section>
       <section className="card">
         <div className="card__header">
-          <h2>TeorÌa complementaria</h2>
+          <h2>Teor√≠a complementaria</h2>
           <button type="button" className="ghost" onClick={onReloadConcept} disabled={isConceptLoading}>
             Actualizar
           </button>
         </div>
-        {isConceptLoading ? <p>Cargando explicaciÛnÖ</p> : null}
+        {isConceptLoading ? <p>Cargando explicaci√≥n‚Ä¶</p> : null}
         {conceptError ? <p className="error-text">{conceptError}</p> : null}
         {conceptText ? <p>{conceptText}</p> : null}
       </section>
       <section className="card horizontal">
         <div>
-          <h3>Ejercicio analÌtico</h3>
+          <h3>Ejercicio anal√≠tico</h3>
           <p>Crea un ejercicio en LaTeX para profundizar en el concepto detectado.</p>
           <button type="button" onClick={onOpenAnalytical} disabled={limitReached}>
-            Ejercicio analÌtico
+            Ejercicio anal√≠tico
           </button>
         </div>
         <div>
-          <h3>Ejercicios proposiciÛn</h3>
-          <p>RecÌproco, inverso y contrarrecÌproco sin identificar cu·l es cu·l.</p>
+          <h3>Ejercicios proposici√≥n</h3>
+          <p>Rec√≠proco, inverso y contrarrec√≠proco sin identificar cu√°l es cu√°l.</p>
           <button type="button" onClick={onOpenProposition} disabled={limitReached}>
-            Ejercicios proposiciÛn
+            Ejercicios proposici√≥n
           </button>
         </div>
-        {limitReached ? <p className="warning">Se alcanzÛ el lÌmite de 5 ciclos para este intento.</p> : null}
+        {limitReached ? <p className="warning">Se alcanz√≥ el l√≠mite de 5 ciclos para este intento.</p> : null}
       </section>
     </AppShell>
   );
 };
+
+
+
+
 
 
 

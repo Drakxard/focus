@@ -237,3 +237,12 @@ button.ghost {
 .toast--error {
   background: rgba(140, 32, 32, 0.92);
 }
+
+.katex-display {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.katex-display > .katex {
+  white-space: normal;
+}

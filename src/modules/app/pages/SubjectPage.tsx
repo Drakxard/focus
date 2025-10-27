@@ -18,7 +18,7 @@ export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack }: S
     event.preventDefault();
     const trimmed = value.trim();
     if (!trimmed) {
-      setError("La asignatura no puede estar vac�a.");
+      setError("La asignatura no puede estar vacía.");
       return;
     }
     setError(null);
@@ -31,7 +31,7 @@ export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack }: S
       left={
         onBack ? (
           <button type="button" onClick={onBack}>
-            ? Volver
+            ← Volver
           </button>
         ) : null
       }
@@ -53,5 +53,8 @@ export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack }: S
     </AppShell>
   );
 };
+
+
+
 
 

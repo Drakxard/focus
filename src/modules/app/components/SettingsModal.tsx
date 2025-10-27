@@ -46,7 +46,7 @@ export const SettingsModal = ({
             />
           </label>
           <p className="muted">
-            También puedes definir la variable <code>GROQ_API_KEY</code> en tu entorno para precargar este valor.
+            TambiÃ©n puedes definir la variable <code>GROQ_API_KEY</code> en tu entorno para precargar este valor.
           </p>
           <div className="settings-actions">
             <button type="submit" disabled={!settings.apiKey || settings.status === "loading"}>
@@ -57,7 +57,7 @@ export const SettingsModal = ({
         </form>
         <section className="settings-models">
           <h3>Modelos disponibles</h3>
-          {settings.availableModels.length === 0 ? <p className="muted">Sin modelos cargados todavía.</p> : null}
+          {settings.availableModels.length === 0 ? <p className="muted">Sin modelos cargados todavÃ­a.</p> : null}
           <ul>
             {settings.availableModels.map((model) => (
               <li key={model.id}>
@@ -71,7 +71,7 @@ export const SettingsModal = ({
                   />
                   <span>
                     {model.id}
-                    {model.description ? ` · ${model.description}` : ""}
+                    {model.description ? ` Â· ${model.description}` : ""}
                   </span>
                 </label>
               </li>
@@ -82,4 +82,3 @@ export const SettingsModal = ({
     </div>
   );
 };
-

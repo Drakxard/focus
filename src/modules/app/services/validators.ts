@@ -16,7 +16,7 @@ export const parseFeedbackJson = (
   try {
     data = JSON.parse(payload);
   } catch (error) {
-    throw new Error("El modelo no devolviÛ un JSON v·lido.");
+    throw new Error("El modelo no devolvi√≥ un JSON v√°lido.");
   }
 
   if (typeof data !== "object" || data === null) {
@@ -35,12 +35,12 @@ export const parseFeedbackJson = (
   if (attemptId !== meta.expectedAttemptId)
     throw new Error("El 'attempt_id' no coincide con el intento actual.");
   if (!isString(summary)) throw new Error("Falta 'summary'.");
-  if (!Array.isArray(errors) || !errors.length) throw new Error("'errors' debe ser una lista no vacÌa.");
+  if (!Array.isArray(errors) || !errors.length) throw new Error("'errors' debe ser una lista no vac√≠a.");
   if (!isString(suggestion)) throw new Error("Falta 'suggestion'.");
 
   const errorItems: AttemptFeedbackError[] = errors.map((raw, index) => {
     if (typeof raw !== "object" || raw === null) {
-      throw new Error(`Error ${index + 1} no tiene estructura v·lida.`);
+      throw new Error(`Error ${index + 1} no tiene estructura v√°lida.`);
     }
     const bag = raw as Record<string, unknown>;
     const id = bag.id;
@@ -78,7 +78,7 @@ export const parseExerciseJson = (
   try {
     data = JSON.parse(payload);
   } catch (error) {
-    throw new Error("El ejercicio recibido no es JSON v·lido.");
+    throw new Error("El ejercicio recibido no es JSON v√°lido.");
   }
 
   if (typeof data !== "object" || data === null) {
@@ -96,7 +96,7 @@ export const parseExerciseJson = (
 
   const normalized = normalizeType(type);
   if (normalized !== "analitico" && normalized !== "proposicion") {
-    throw new Error("El 'type' debe ser 'analÌtico' o 'proposiciÛn'.");
+    throw new Error("El 'type' debe ser 'anal√≠tico' o 'proposici√≥n'.");
   }
 
   return {
@@ -107,4 +107,4 @@ export const parseExerciseJson = (
     createdAt: new Date().toISOString(),
     model: meta.model,
   };
-};
+};

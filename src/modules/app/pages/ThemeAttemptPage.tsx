@@ -22,7 +22,7 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit }: ThemeAttemp
     event.preventDefault();
     const trimmed = value.trim();
     if (!trimmed) {
-      setError("Describe tu comprensiÛn antes de confirmar.");
+      setError("Describe tu comprensi√≥n antes de confirmar.");
       return;
     }
     setError(null);
@@ -35,14 +35,14 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit }: ThemeAttemp
       subtitle={`Asignatura: ${topic.subject}`}
       left={
         <button type="button" onClick={onBack}>
-          ? Volver
+          ‚Üê Volver
         </button>
       }
       right={<StatusBadge status={status} />}
     >
       <form className="card" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="attempt-content">
-          Describe tu comprensiÛn
+          Describe tu comprensi√≥n
         </label>
         <textarea
           id="attempt-content"
@@ -66,5 +66,8 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit }: ThemeAttemp
     </AppShell>
   );
 };
+
+
+
 
 

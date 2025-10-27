@@ -1,6 +1,7 @@
 import { FormEvent } from "react";
 import { AppShell } from "../components/Layout";
 import { StatusBadge } from "../components/StatusBadge";
+import { LatexRenderer } from "../components/LatexRenderer";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, ExercisePayload } from "../types";
 import { parsePropositionPayload } from "../utils/payload";
@@ -36,8 +37,9 @@ const StatementCard = ({ exerciseId, statement, index, onSubmit }: StatementCard
 
   return (
     <form className="card" onSubmit={handleSubmit}>
-      <h3>ProposiciÛn {index + 1}</h3>
-      <p>{statement}</p>
+      <h3>Proposici√≥n {index + 1}</h3>
+      <LatexRenderer content={statement} />
+      <pre className="code-block">{statement}</pre>
       <textarea
         value={value}
         onChange={(event) => {
@@ -62,11 +64,11 @@ export const ExercisePropositionPage = ({ attempt, exercise, onBack, onSubmit }:
 
   return (
     <AppShell
-      title="Ejercicios proposiciÛn"
+      title="Ejercicios proposici√≥n"
       subtitle={`Intento ${attempt.latestVersion}`}
       left={
         <button type="button" onClick={onBack}>
-          &lt;- Volver
+          ‚Üê Volver
         </button>
       }
     >
@@ -84,6 +86,11 @@ export const ExercisePropositionPage = ({ attempt, exercise, onBack, onSubmit }:
     </AppShell>
   );
 };
+
+
+
+
+
 
 
 

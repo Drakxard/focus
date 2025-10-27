@@ -7,7 +7,7 @@ interface StatusBadgeProps {
 
 const LABELS: Record<AutosaveStatus, string> = {
   idle: "Sin cambios",
-  guardando: "Guardando…",
+  guardando: "Guardandoâ€¦",
   guardado: "Guardado",
   error: "Error",
 };

@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { AppShell } from "../components/Layout";
+import { LatexRenderer } from "../components/LatexRenderer";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, ExercisePayload } from "../types";
@@ -35,21 +36,22 @@ export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit }: 
 
   return (
     <AppShell
-      title="Ejercicio analÌtico"
+      title="Ejercicio anal√≠tico"
       subtitle={`Intento ${attempt.latestVersion}`}
       left={
         <button type="button" onClick={onBack}>
-          &lt;- Volver
+          ‚Üê Volver
         </button>
       }
       right={<StatusBadge status={status} />}
     >
       <section className="card">
         <h3>Consigna</h3>
+        <LatexRenderer content={prompt} />
         <pre className="code-block">{prompt}</pre>
       </section>
       <form className="card" onSubmit={handleSubmit}>
-        <h3>Tu demostraciÛn</h3>
+        <h3>Tu demostraci√≥n</h3>
         <textarea
           value={value}
           onChange={(event) => {
@@ -68,6 +70,11 @@ export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit }: 
     </AppShell>
   );
 };
+
+
+
+
+
 
 
 

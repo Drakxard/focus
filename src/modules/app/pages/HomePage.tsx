@@ -18,12 +18,12 @@ const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) =
       <div className="theme-card__header">
         <h3>{theme.title}</h3>
         <button type="button" onClick={onOpen}>
-          Abrir ?
+          Abrir â†’
         </button>
       </div>
       {latestAttempt ? (
         <>
-          <p className="muted">Último estado: {latestAttempt.status}</p>
+          <p className="muted">Ãšltimo estado: {latestAttempt.status}</p>
           {latestFeedback ? (
             <div className="feedback-snippet">
               <strong>{latestFeedback.summary}</strong>
@@ -34,11 +34,11 @@ const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) =
               </ul>
             </div>
           ) : (
-            <p className="muted">Sin feedback aún.</p>
+            <p className="muted">Sin feedback aÃºn.</p>
           )}
         </>
       ) : (
-        <p className="muted">Aún no hay intentos.</p>
+        <p className="muted">AÃºn no hay intentos.</p>
       )}
     </div>
   );
@@ -47,7 +47,7 @@ const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) =
 export const HomePage = ({ topics, onCreateTopic, onOpenTheme, onExportTopic, onOpenSettings }: HomePageProps) => {
   return (
     <AppShell
-      title="Página Inicial"
+      title="PÃ¡gina Inicial"
       subtitle="Repasa asignaturas y temas"
       left={
         <button type="button" onClick={onOpenSettings}>
@@ -85,4 +85,6 @@ export const HomePage = ({ topics, onCreateTopic, onOpenTheme, onExportTopic, on
     </AppShell>
   );
 };
+
+
 
