@@ -37,23 +37,50 @@
   gap: 1rem;
 }
 
-.settings-models ul {
-  list-style: none;
+.settings-models__label {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0;
-  margin: 0;
 }
 
-.settings-models li {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.6rem;
-  padding: 0.75rem;
+.settings-models__label select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
 }
 
-.settings-models label {
+.settings-models__label select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.settings-prompts {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
-  align-items: center;
+}
+
+.settings-prompts__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-prompts__field textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.settings-prompts__field textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
 }
