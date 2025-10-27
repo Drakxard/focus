@@ -52,7 +52,7 @@ interface AppState {
 }
 
 const initialSettings: SettingsState = {
-  apiKey: import.meta.env.VITE_GROQ_API_KEY ?? "",
+  apiKey: import.meta.env.GROQ_API_KEY ?? "",
   selectedModel: "",
   availableModels: [],
   status: "idle",
@@ -427,4 +427,5 @@ export const useAppStore = create<AppState>()(
 );
 
 export const getAttempt = (attemptId: string) => findAttempt(useAppStore.getState().topics, attemptId);
+
 

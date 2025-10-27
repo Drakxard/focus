@@ -46,7 +46,7 @@ export const SettingsModal = ({
             />
           </label>
           <p className="muted">
-            También puedes definir la variable <code>VITE_GROQ_API_KEY</code> en tu entorno para precargar este valor.
+            También puedes definir la variable <code>GROQ_API_KEY</code> en tu entorno para precargar este valor.
           </p>
           <div className="settings-actions">
             <button type="submit" disabled={!settings.apiKey || settings.status === "loading"}>
@@ -82,3 +82,4 @@ export const SettingsModal = ({
     </div>
   );
 };
+
