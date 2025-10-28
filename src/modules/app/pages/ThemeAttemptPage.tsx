@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "../components/Layout";
+import { LatexRenderer } from "../components/LatexRenderer";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, Theme, Topic } from "../types";
@@ -201,9 +202,14 @@ export const ThemeAttemptPage = ({
 }: ThemeAttemptPageProps) => {
   const draftId = `attempt-draft-${theme.themeId}`;
   const { value, setValue, status } = useAutosaveDraft(draftId, "");
+  const latexDraftId = `attempt-latex-draft-${theme.themeId}`;
+  const { value: latexContent, setValue: setLatexContent } = useAutosaveDraft(latexDraftId, "");
+  const [isLatexEditing, setIsLatexEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activePane, setActivePane] = useState(0);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
+
+  const hasLatexContent = latexContent.trim().length > 0;
 
   const latestAttempt = theme.attempts[0] ?? null;
   const selectedAttempt = selectedAttemptId
@@ -236,6 +242,38 @@ export const ThemeAttemptPage = ({
       description: "Cuenta con detalle lo que entiendes sobre el tema.",
       content: (
         <form className="card" onSubmit={handleSubmit}>
+          <section className="latex-editor">
+            <div className="latex-editor__header">
+              <h3 style={{ margin: 0 }}>Carga latex</h3>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setIsLatexEditing((prev) => !prev)}
+              >
+                {isLatexEditing ? "Render" : "Edit"}
+              </button>
+            </div>
+            {isLatexEditing ? (
+              <>
+                <label className="sr-only" htmlFor="attempt-latex">
+                  Editor de expresiones LaTeX
+                </label>
+                <textarea
+                  id="attempt-latex"
+                  value={latexContent}
+                  onChange={(event) => setLatexContent(event.target.value)}
+                  placeholder="Escribe o pega aqui tu expresion en LaTeX..."
+                  className="text-input code latex-editor__textarea"
+                />
+              </>
+            ) : hasLatexContent ? (
+              <div className="latex-editor__preview">
+                <LatexRenderer content={latexContent} />
+              </div>
+            ) : (
+              <div className="latex-editor__placeholder">Carga latex</div>
+            )}
+          </section>
           <label className="sr-only" htmlFor="attempt-content">
             Describe tu comprension
           </label>

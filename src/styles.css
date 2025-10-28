@@ -325,3 +325,49 @@ button.ghost.danger {
 .math-text .katex-display {
   margin: 0.75rem 0;
 }
+
+.latex-editor {
+  background: rgba(14, 18, 42, 0.8);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.latex-editor__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.latex-editor__textarea {
+  min-height: 8rem;
+}
+
+.latex-editor__preview,
+.latex-editor__placeholder {
+  min-height: 10rem;
+  border-radius: 0.85rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(12, 32, 112, 0.85), rgba(6, 12, 48, 0.85));
+}
+
+.latex-editor__preview {
+  overflow-x: auto;
+}
+
+.latex-editor__placeholder {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: rgba(242, 245, 255, 0.75);
+}
+
+.latex-editor__preview .math-text {
+  width: 100%;
+}
