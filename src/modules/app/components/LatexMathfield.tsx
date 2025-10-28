@@ -84,8 +84,34 @@ export const LatexMathfield = ({ value, onChange, className, placeholder }: Late
     };
 
     element.addEventListener("keydown", handleKeyDown);
+    const handlePaste = (event: ClipboardEvent) => {
+      if (!element) return;
+      event.preventDefault();
+      const text = event.clipboardData?.getData("text");
+      if (!text) {
+        return;
+      }
+      const normalized = text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n");
+      const latex = normalized
+        .split("\n")
+        .map((line) => line.replace(/ /g, String.raw`\ `))
+        .join(String.raw`\\` + "\n");
+
+      element.insert(latex, {
+        format: "latex",
+        insertionMode: "replaceSelection",
+        selectionMode: "after",
+      });
+      onChange(element.value);
+    };
+
+    element.addEventListener("paste", handlePaste);
+
     return () => {
       element.removeEventListener("keydown", handleKeyDown);
+      element.removeEventListener("paste", handlePaste);
     };
   }, [isReady, onChange]);
 
