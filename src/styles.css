@@ -43,6 +43,11 @@ body {
   --color-editor-border: rgba(255, 255, 255, 0.1);
   --color-editor-accent: rgba(74, 108, 255, 0.18);
   --color-selection: rgba(74, 108, 255, 0.35);
+  --color-modal-overlay: rgba(7, 7, 10, 0.78);
+  --color-modal-surface: rgba(18, 21, 38, 0.95);
+  --color-modal-border: rgba(255, 255, 255, 0.14);
+  --shadow-modal: 0 20px 55px rgba(0, 0, 0, 0.45);
+  --color-control-surface: rgba(16, 24, 54, 0.85);
   --shadow-elevated: 0 22px 45px rgba(0, 0, 0, 0.38);
   background: var(--color-background);
   color: var(--color-text-primary);
@@ -86,6 +91,11 @@ body[data-theme="light"] {
   --color-editor-border: rgba(47, 75, 224, 0.18);
   --color-editor-accent: rgba(47, 75, 224, 0.14);
   --color-selection: rgba(47, 75, 224, 0.25);
+  --color-modal-overlay: rgba(26, 32, 68, 0.38);
+  --color-modal-surface: rgba(255, 255, 255, 0.98);
+  --color-modal-border: rgba(30, 34, 60, 0.15);
+  --shadow-modal: 0 24px 55px rgba(56, 68, 160, 0.18);
+  --color-control-surface: rgba(240, 244, 255, 0.92);
   --shadow-elevated: 0 20px 40px rgba(47, 63, 160, 0.12);
 }
 
@@ -487,8 +497,17 @@ button.ghost.danger {
   gap: 0.4rem;
 }
 
+.latex-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .latex-editor__textarea {
   min-height: 8rem;
+  max-height: 22rem;
+  overflow: auto;
 }
 
 .latex-editor__mathfield {
@@ -496,6 +515,8 @@ button.ghost.danger {
   overflow: hidden;
   background: var(--color-editor-accent);
   border: 1px solid var(--color-editor-border);
+  max-height: 22rem;
+  display: flex;
 }
 
 .latex-mathfield {
@@ -522,6 +543,7 @@ button.ghost.danger {
   --mathfield-color: var(--color-text-primary);
   --mathfield-placeholder-color: var(--color-text-muted);
   --mathfield-selection-background-color: var(--color-selection);
+  overflow: auto;
 }
 
 .latex-mathfield__loading {
@@ -534,4 +556,33 @@ button.ghost.danger {
 
 .latex-mathfield math-field .ML__text {
   background: transparent !important;
+}
+
+.font-scale-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-editor-border);
+  background: var(--color-control-surface);
+}
+
+.font-scale-control__button {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.font-scale-control__value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted-strong);
+  min-width: 3rem;
+  text-align: center;
 }

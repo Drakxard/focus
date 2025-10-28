@@ -203,12 +203,21 @@ export const ThemeAttemptPage = ({
   const draftId = `attempt-draft-${theme.themeId}`;
   const { value: latexContent, setValue: setLatexContent, status } = useAutosaveDraft(draftId, "");
   const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
+  const [latexFontScale, setLatexFontScale] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
   const handleLatexChange = (next: string) => {
     if (next.length <= MAX_CHARS) {
       setLatexContent(next);
     }
+  };
+
+  const adjustLatexFont = (direction: "increase" | "decrease") => {
+    setLatexFontScale((prev) => {
+      const delta = direction === "increase" ? 0.1 : -0.1;
+      const next = Math.min(2, Math.max(0.6, +(prev + delta).toFixed(2)));
+      return next;
+    });
   };
   const [activePane, setActivePane] = useState(0);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
@@ -249,13 +258,34 @@ export const ThemeAttemptPage = ({
               <div className="latex-editor__title-group">
                 <h3 style={{ margin: 0 }}>Describe tu comprension</h3>
               </div>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => setLatexMode((prev) => (prev === "visual" ? "code" : "visual"))}
-              >
-                {latexMode === "visual" ? "Ver codigo" : "Render interactivo"}
-              </button>
+              <div className="latex-editor__actions">
+                <div className="font-scale-control" aria-label="Ajustar tamaño de fuente">
+                  <button
+                    type="button"
+                    className="ghost font-scale-control__button"
+                    onClick={() => adjustLatexFont("decrease")}
+                    title="Reducir tamaño"
+                  >
+                    -
+                  </button>
+                  <span className="font-scale-control__value">{Math.round(latexFontScale * 100)}%</span>
+                  <button
+                    type="button"
+                    className="ghost font-scale-control__button"
+                    onClick={() => adjustLatexFont("increase")}
+                    title="Aumentar tamaño"
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => setLatexMode((prev) => (prev === "visual" ? "code" : "visual"))}
+                >
+                  {latexMode === "visual" ? "Ver codigo" : "Render interactivo"}
+                </button>
+              </div>
             </div>
             {latexMode === "visual" ? (
               <LatexMathfield
@@ -263,6 +293,7 @@ export const ThemeAttemptPage = ({
                 value={latexContent}
                 onChange={handleLatexChange}
                 placeholder="Escribe directamente aqui y se renderiza automaticamente..."
+                fontSizeRem={latexFontScale}
               />
             ) : (
               <>
@@ -275,6 +306,7 @@ export const ThemeAttemptPage = ({
                   onChange={(event) => handleLatexChange(event.target.value)}
                   placeholder="Escribe o pega aqui tu expresion en LaTeX..."
                   className="text-input code latex-editor__textarea"
+                  style={{ fontSize: `${latexFontScale}rem` }}
                   maxLength={MAX_CHARS}
                 />
               </>

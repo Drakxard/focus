@@ -7,9 +7,10 @@ interface LatexMathfieldProps {
   onChange: (next: string) => void;
   className?: string;
   placeholder?: string;
+  fontSizeRem?: number;
 }
 
-export const LatexMathfield = ({ value, onChange, className, placeholder }: LatexMathfieldProps) => {
+export const LatexMathfield = ({ value, onChange, className, placeholder, fontSizeRem = 1 }: LatexMathfieldProps) => {
   const fieldRef = useRef<MathfieldElement | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -116,7 +117,10 @@ export const LatexMathfield = ({ value, onChange, className, placeholder }: Late
   }, [isReady, onChange]);
 
   return (
-    <div className={["latex-mathfield", className].filter(Boolean).join(" ")}>
+    <div
+      className={["latex-mathfield", className].filter(Boolean).join(" ")}
+      style={{ fontSize: `${fontSizeRem}rem` }}
+    >
       {isReady ? (
         <math-field
           ref={setRef}
