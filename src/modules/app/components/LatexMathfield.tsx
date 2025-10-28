@@ -7,10 +7,9 @@ interface LatexMathfieldProps {
   onChange: (next: string) => void;
   className?: string;
   placeholder?: string;
-  alignment?: "left" | "center" | "right";
 }
 
-export const LatexMathfield = ({ value, onChange, className, placeholder, alignment = "center" }: LatexMathfieldProps) => {
+export const LatexMathfield = ({ value, onChange, className, placeholder }: LatexMathfieldProps) => {
   const fieldRef = useRef<MathfieldElement | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -64,7 +63,8 @@ export const LatexMathfield = ({ value, onChange, className, placeholder, alignm
     const element = fieldRef.current;
     if (!element) return;
 
-    element.smartMode = true;
+    element.smartMode = false;
+    element.defaultMode = "math";
     element.mathModeSpace = String.raw`\;`;
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -89,15 +89,8 @@ export const LatexMathfield = ({ value, onChange, className, placeholder, alignm
     };
   }, [isReady, onChange]);
 
-  useEffect(() => {
-    if (!isReady) return;
-    const element = fieldRef.current;
-    if (!element) return;
-    element.style.textAlign = alignment;
-  }, [alignment, isReady]);
-
   return (
-    <div className={["latex-mathfield", className].filter(Boolean).join(" ")} data-align={alignment}>
+    <div className={["latex-mathfield", className].filter(Boolean).join(" ")}>
       {isReady ? (
         <math-field
           ref={setRef}

@@ -16,8 +16,6 @@ interface ThemeAttemptPageProps {
 }
 
 const MAX_CHARS = 10000;
-const LATEX_ALIGNMENTS = ["left", "center", "right"] as const;
-type LatexAlignment = (typeof LATEX_ALIGNMENTS)[number];
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "Fecha desconocida";
@@ -203,23 +201,17 @@ export const ThemeAttemptPage = ({
   onOpenSettings,
 }: ThemeAttemptPageProps) => {
   const draftId = `attempt-draft-${theme.themeId}`;
-  const { value, setValue, status } = useAutosaveDraft(draftId, "");
-  const latexDraftId = `attempt-latex-draft-${theme.themeId}`;
-  const { value: latexContent, setValue: setLatexContent } = useAutosaveDraft(latexDraftId, "");
+  const { value: latexContent, setValue: setLatexContent, status } = useAutosaveDraft(draftId, "");
   const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
-  const latexAlignDraftId = `attempt-latex-align-${theme.themeId}`;
-  const { value: latexAlignValue, setValue: setLatexAlignValue } = useAutosaveDraft(latexAlignDraftId, "center");
-  const latexAlign: LatexAlignment =
-    latexAlignValue === "left" || latexAlignValue === "right" || latexAlignValue === "center" ? (latexAlignValue as LatexAlignment) : "center";
   const [error, setError] = useState<string | null>(null);
-  const [activePane, setActivePane] = useState(0);
-  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
 
-  const handleAlignSelect = (option: LatexAlignment) => {
-    if (option !== latexAlign) {
-      setLatexAlignValue(option);
+  const handleLatexChange = (next: string) => {
+    if (next.length <= MAX_CHARS) {
+      setLatexContent(next);
     }
   };
+  const [activePane, setActivePane] = useState(0);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
 
   const latestAttempt = theme.attempts[0] ?? null;
   const selectedAttempt = selectedAttemptId
@@ -228,7 +220,7 @@ export const ThemeAttemptPage = ({
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const trimmed = value.trim();
+    const trimmed = latexContent.trim();
     if (!trimmed) {
       setError("Describe tu comprension antes de confirmar.");
       return;
@@ -255,23 +247,7 @@ export const ThemeAttemptPage = ({
           <section className="latex-editor">
             <div className="latex-editor__header">
               <div className="latex-editor__title-group">
-                <h3 style={{ margin: 0 }}>Expresion LaTeX</h3>
-                <div className="latex-editor__controls">
-                  <span className="latex-editor__label">Alinear</span>
-                  <div className="latex-editor__segmented">
-                    {LATEX_ALIGNMENTS.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        className={`segmented-button${latexAlign === option ? " is-active" : ""}`}
-                        aria-pressed={latexAlign === option}
-                        onClick={() => handleAlignSelect(option)}
-                      >
-                        {option === "left" ? "Izquierda" : option === "center" ? "Centro" : "Derecha"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <h3 style={{ margin: 0 }}>Describe tu comprension</h3>
               </div>
               <button
                 type="button"
@@ -284,9 +260,8 @@ export const ThemeAttemptPage = ({
             {latexMode === "visual" ? (
               <LatexMathfield
                 className="latex-editor__mathfield"
-                alignment={latexAlign}
                 value={latexContent}
-                onChange={setLatexContent}
+                onChange={handleLatexChange}
                 placeholder="Escribe directamente aqui y se renderiza automaticamente..."
               />
             ) : (
@@ -297,32 +272,15 @@ export const ThemeAttemptPage = ({
                 <textarea
                   id="attempt-latex"
                   value={latexContent}
-                  onChange={(event) => setLatexContent(event.target.value)}
+                  onChange={(event) => handleLatexChange(event.target.value)}
                   placeholder="Escribe o pega aqui tu expresion en LaTeX..."
                   className="text-input code latex-editor__textarea"
+                  maxLength={MAX_CHARS}
                 />
               </>
             )}
           </section>
-          <label className="sr-only" htmlFor="attempt-content">
-            Describe tu comprension
-          </label>
-          <textarea
-            id="attempt-content"
-            value={value}
-            maxLength={MAX_CHARS}
-            placeholder="Describe los conocimientos que crees dominar sobre este tema..."
-            onChange={(event) => {
-              const next = event.target.value;
-              if (next.length <= MAX_CHARS) {
-                setValue(next);
-              }
-            }}
-            className="text-input large"
-          />
-          <div className="muted">
-            {value.length}/{MAX_CHARS} caracteres
-          </div>
+          <div className="muted">{latexContent.length}/{MAX_CHARS} caracteres</div>
           {error ? <p className="error-text">{error}</p> : null}
           <div className="actions">
             <button type="submit">Confirmar</button>

@@ -133,26 +133,6 @@ button.ghost.danger {
   color: var(--color-ghost-danger-text);
 }
 
-button.segmented-button {
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  transform: none;
-}
-
-button.segmented-button:hover {
-  background: var(--color-editor-accent);
-  color: var(--color-text-primary);
-}
-
-button.segmented-button.is-active {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
-}
-
 .home-toolbar,
 .page-toolbar {
   display: flex;
@@ -507,28 +487,6 @@ button.segmented-button.is-active {
   gap: 0.4rem;
 }
 
-.latex-editor__controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.latex-editor__label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.latex-editor__segmented {
-  display: inline-flex;
-  border-radius: 999px;
-  border: 1px solid var(--color-editor-border);
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.02);
-}
-
 .latex-editor__textarea {
   min-height: 8rem;
 }
@@ -538,18 +496,6 @@ button.segmented-button.is-active {
   overflow: hidden;
   background: var(--color-editor-accent);
   border: 1px solid var(--color-editor-border);
-}
-
-.latex-editor__mathfield[data-align="left"] math-field {
-  text-align: left;
-}
-
-.latex-editor__mathfield[data-align="center"] math-field {
-  text-align: center;
-}
-
-.latex-editor__mathfield[data-align="right"] math-field {
-  text-align: right;
 }
 
 .latex-mathfield {
@@ -584,4 +530,8 @@ button.segmented-button.is-active {
   text-align: center;
   font-weight: 600;
   color: var(--color-muted-strong);
+}
+
+.latex-mathfield math-field .ML__text {
+  background: transparent !important;
 }
