@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import type { MathfieldElement } from "mathlive";
 import "mathlive/static.css";
 
@@ -13,6 +14,13 @@ interface LatexMathfieldProps {
 export const LatexMathfield = ({ value, onChange, className, placeholder, fontSizeRem = 1 }: LatexMathfieldProps) => {
   const fieldRef = useRef<MathfieldElement | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const containerStyle = useMemo<CSSProperties>(
+    () => ({
+      fontSize: `${fontSizeRem}rem`,
+      "--latex-mathfield-scale": `${fontSizeRem}`,
+    }),
+    [fontSizeRem]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -119,7 +127,7 @@ export const LatexMathfield = ({ value, onChange, className, placeholder, fontSi
   return (
     <div
       className={["latex-mathfield", className].filter(Boolean).join(" ")}
-      style={{ fontSize: `${fontSizeRem}rem` }}
+      style={containerStyle}
     >
       {isReady ? (
         <math-field

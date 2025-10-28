@@ -520,6 +520,7 @@ button.ghost.danger {
 }
 
 .latex-mathfield {
+  --latex-mathfield-scale: 1;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -534,7 +535,7 @@ button.ghost.danger {
   width: 100%;
   display: block;
   padding: 1.2rem;
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--latex-mathfield-scale, 1));
   background: transparent;
   color: var(--color-text-primary);
   --mathfield-background-color: transparent;
