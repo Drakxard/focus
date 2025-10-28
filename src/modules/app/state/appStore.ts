@@ -8,6 +8,7 @@ import {
   AutosaveStatus,
   ExercisePayload,
   PropositionPromptKind,
+  PropositionPrompts,
   SettingsState,
   Theme,
   Topic,
