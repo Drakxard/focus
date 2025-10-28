@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "../components/Layout";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -103,14 +103,27 @@ const LatestFeedbackPanel = ({
           </div>
         ) : null}
       </div>
-      <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, latestFeedback.feedbackId)}>
-        Abrir critica completa
-      </button>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <button type="button" onClick={() => onOpenReview?.(attempt.attemptId, latestFeedback.feedbackId)}>
+          Actualizar critica
+        </button>
+        <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, latestFeedback.feedbackId)}>
+          Ver critica completa
+        </button>
+      </div>
     </section>
   );
 };
 
-const AttemptHistory = ({ attempts, onOpenReview }: { attempts: Attempt[]; onOpenReview?: (attemptId: string, feedbackId: string) => void }) => {
+const AttemptHistory = ({
+  attempts,
+  onOpenReview,
+  onSelectAttempt,
+}: {
+  attempts: Attempt[];
+  onOpenReview?: (attemptId: string, feedbackId: string) => void;
+  onSelectAttempt?: (attemptId: string) => void;
+}) => {
   return (
     <section className="card">
       <h3>Historial de iteraciones</h3>
@@ -146,13 +159,18 @@ const AttemptHistory = ({ attempts, onOpenReview }: { attempts: Attempt[]; onOpe
               <div className="muted" style={{ whiteSpace: "pre-wrap" }}>
                 {summarize(version?.content ?? "")}
               </div>
-              {feedback ? (
-                <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, feedback.feedbackId)}>
-                  Abrir critica
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <button type="button" onClick={() => onSelectAttempt?.(attempt.attemptId)}>
+                  Ver completo
                 </button>
-              ) : (
-                <span className="muted">Sin critica registrada</span>
-              )}
+                {feedback ? (
+                  <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, feedback.feedbackId)}>
+                    Abrir critica
+                  </button>
+                ) : (
+                  <span className="muted">Sin critica registrada</span>
+                )}
+              </div>
             </li>
           );
         })}
@@ -166,8 +184,12 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
   const { value, setValue, status } = useAutosaveDraft(draftId, "");
   const [error, setError] = useState<string | null>(null);
   const [activePane, setActivePane] = useState(0);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
 
   const latestAttempt = theme.attempts[0] ?? null;
+  const selectedAttempt = selectedAttemptId
+    ? theme.attempts.find((attempt) => attempt.attemptId === selectedAttemptId) ?? null
+    : null;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -180,7 +202,15 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
     onSubmit(trimmed);
   };
 
-  const panes = [
+  useEffect(() => {
+    if (selectedAttemptId && !selectedAttempt) {
+      setSelectedAttemptId(null);
+      setActivePane(2);
+    }
+  }, [selectedAttempt, selectedAttemptId]);
+
+  const historyIndex = 2;
+  const basePanes = [
     {
       key: "attempt",
       title: "Describe tu comprension",
@@ -225,7 +255,14 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
       description: "Consulta tus envios previos y abre sus criticas.",
       content:
         theme.attempts.length > 0 ? (
-          <AttemptHistory attempts={theme.attempts} onOpenReview={onOpenReview} />
+          <AttemptHistory
+            attempts={theme.attempts}
+            onOpenReview={onOpenReview}
+            onSelectAttempt={(attemptId) => {
+              setSelectedAttemptId(attemptId);
+              setActivePane(basePanes.length);
+            }}
+          />
         ) : (
           <section className="card">
             <h3>Historial de iteraciones</h3>
@@ -236,6 +273,89 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
         ),
     },
   ] as const;
+
+  const detailPane = selectedAttempt
+    ? {
+        key: `history-detail-${selectedAttempt.attemptId}`,
+        title: `Iteracion #${selectedAttempt.latestVersion}`,
+        description: "Revisa el envio completo y las criticas relacionadas.",
+        content: (
+          <section className="card">
+            <div className="card__header" style={{ alignItems: "flex-start", gap: "0.75rem" }}>
+              <div>
+                <h3 style={{ margin: 0 }}>Detalle de iteracion #{selectedAttempt.latestVersion}</h3>
+                <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+                  Creada el {formatDateTime(selectedAttempt.createdAt)} | Actualizada el{" "}
+                  {formatDateTime(selectedAttempt.updatedAt)}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => {
+                  setSelectedAttemptId(null);
+                  setActivePane(historyIndex);
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+            <div className="history-detail">
+              <div className="history-detail__column">
+                <h4>Versiones enviadas</h4>
+                {selectedAttempt.versions.map((version) => (
+                  <article key={version.version} className="history-detail__version">
+                    <header>
+                      <strong>Version {version.version}</strong>
+                      <span className="muted">{formatDateTime(version.createdAt)}</span>
+                    </header>
+                    <div>{version.content ? <p style={{ whiteSpace: "pre-wrap" }}>{version.content}</p> : <p className="muted">Sin contenido.</p>}</div>
+                  </article>
+                ))}
+              </div>
+              <div className="history-detail__column">
+                <h4>Criticas recibidas</h4>
+                {selectedAttempt.feedbackHistory.length === 0 ? (
+                  <p className="muted">Sin criticas asociadas.</p>
+                ) : (
+                  selectedAttempt.feedbackHistory.map((feedback) => (
+                    <article key={feedback.feedbackId} className="history-detail__feedback">
+                      <header>
+                        <strong>{feedback.summary}</strong>
+                        <span className="muted">{formatDateTime(feedback.createdAt)}</span>
+                      </header>
+                      {feedback.suggestion ? (
+                        <p style={{ margin: "0.5rem 0" }}>
+                          <strong>Sugerencia:</strong> {feedback.suggestion}
+                        </p>
+                      ) : null}
+                      {feedback.errors.length ? (
+                        <ul>
+                          {feedback.errors.map((error) => (
+                            <li key={error.id}>
+                              <strong>{error.point}:</strong> {error.counterexample}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="ghost"
+                        onClick={() => onOpenReview?.(selectedAttempt.attemptId, feedback.feedbackId)}
+                      >
+                        Abrir critica
+                      </button>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+        ),
+      }
+    : null;
+
+  const panes = detailPane ? [...basePanes, detailPane] : basePanes;
 
   const totalPanes = panes.length;
   const currentPane = panes[activePane];

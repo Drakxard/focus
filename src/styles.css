@@ -52,6 +52,13 @@ button.ghost.danger {
   color: #ff9a9a;
 }
 
+.home-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .card {
   background: rgba(18, 21, 38, 0.85);
   border-radius: 1rem;
@@ -185,6 +192,41 @@ button.ghost.danger {
 .topic-card__themes {
   display: grid;
   gap: 1rem;
+}
+
+.history-detail {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.history-detail__column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-detail__version,
+.history-detail__feedback {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-detail__version header,
+.history-detail__feedback header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.history-detail__feedback ul {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
 }
 
 .theme-card {

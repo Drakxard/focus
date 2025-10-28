@@ -74,15 +74,15 @@ export const HomePage = ({
     <AppShell
       title="Página Inicial"
       subtitle="Repasa asignaturas y temas"
-      left={
-        <button type="button" onClick={onOpenSettings}>
-          ? Ajustes
-        </button>
-      }
       right={
-        <button type="button" onClick={onCreateTopic}>
-          + Nueva asignatura
-        </button>
+        <div className="home-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <button type="button" onClick={onCreateTopic}>
+            + Nueva asignatura
+          </button>
+        </div>
       }
     >
       <div className="topics-grid">
