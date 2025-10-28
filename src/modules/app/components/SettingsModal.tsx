@@ -91,7 +91,7 @@ export const SettingsModal = ({
               <label className="settings-models__label">
                 <span>Selecciona un modelo</span>
                 <select value={settings.selectedModel} onChange={(event) => onSelectModel(event.target.value)}>
-                  <option value="">? Elegi un modelo ?</option>
+                  <option value="">-- Elige un modelo --</option>
                   {settings.availableModels.map((model) => (
                     <option key={model.id} value={model.id}>
                       {model.id}
