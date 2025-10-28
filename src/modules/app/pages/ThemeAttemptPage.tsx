@@ -325,10 +325,6 @@ export const ThemeAttemptPage = ({
               setSelectedAttemptId(attemptId);
               setActivePane(basePanes.length);
             }}
-            onSelectAttempt={(attemptId) => {
-              setSelectedAttemptId(attemptId);
-              setActivePane(basePanes.length);
-            }}
             onRefreshFeedback={onRefreshFeedback}
           />
         ) : (
