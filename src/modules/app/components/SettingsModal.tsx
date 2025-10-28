@@ -1,4 +1,5 @@
 import { FormEvent } from "react";
+import { DEFAULT_PROPOSITION_PROMPTS } from "../state/appStore";
 import { PropositionPromptKind, SettingsState } from "../types";
 import "./settings.css";
 
@@ -45,6 +46,8 @@ export const SettingsModal = ({
   onPromptChange,
 }: SettingsModalProps) => {
   if (!open) return null;
+
+  const prompts = settings.propositionPrompts ?? DEFAULT_PROPOSITION_PROMPTS;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -117,7 +120,7 @@ export const SettingsModal = ({
                 <small className="muted">{help}</small>
               </span>
               <textarea
-                value={settings.propositionPrompts[kind]}
+                value={prompts[kind]}
                 onChange={(event) => onPromptChange(kind, event.target.value)}
                 rows={4}
               />

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 
 
-import { useAppStore } from "./state/appStore";
+import { DEFAULT_PROPOSITION_PROMPTS, useAppStore } from "./state/appStore";
 
 
 
@@ -1215,7 +1215,8 @@ export const App = () => {
       }
 
       const critiqueText = buildCritiqueForPrompt(feedback);
-      const basePrompt = replaceConditionPlaceholder(settings.propositionPrompts.initial, critiqueText);
+      const prompts = settings.propositionPrompts ?? DEFAULT_PROPOSITION_PROMPTS;
+      const basePrompt = replaceConditionPlaceholder(prompts.initial, critiqueText);
       const baseProposition = (
         await requestPropositionText({
           apiKey: settings.apiKey,
@@ -1230,7 +1231,7 @@ export const App = () => {
 
       const statements: string[] = [];
       for (const variant of PROPOSITION_VARIANTS) {
-        const template = settings.propositionPrompts[variant.kind];
+        const template = prompts[variant.kind];
         const prompt = replaceConditionPlaceholder(template, baseProposition);
         const response = (
           await requestPropositionText({

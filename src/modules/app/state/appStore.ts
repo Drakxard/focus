@@ -53,21 +53,23 @@ interface AppState {
   exportTopic: (topicId: string) => string | null;
 }
 
+export const DEFAULT_PROPOSITION_PROMPTS: PropositionPrompts = {
+  initial:
+    "Toma este texto y genera una proposicion clara y critica. Conserva exactamente cualquier LaTeX presente. Devuelve solo la proposicion.\n\n{{condicion}}",
+  reciprocal:
+    "Identifica hipotesis y tesis. Forma la reciproca intercambiando hipotesis y tesis (q -> p), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
+  inverse:
+    "Identifica hipotesis y tesis. Forma el inverso (~p -> ~q), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
+  contraReciprocal:
+    "Identifica hipotesis y tesis. Forma la contra-reciproca (~q -> ~p), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
+};
+
 const initialSettings: SettingsState = {
   apiKey: import.meta.env.GROQ_API_KEY ?? "",
   selectedModel: "",
   availableModels: [],
   status: "idle",
-  propositionPrompts: {
-    initial:
-      "Toma este texto y genera una proposicion clara y critica. Conserva exactamente cualquier LaTeX presente. Devuelve solo la proposicion.\n\n{{condicion}}",
-    reciprocal:
-      "Identifica hipotesis y tesis. Forma la reciproca intercambiando hipotesis y tesis (q -> p), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
-    inverse:
-      "Identifica hipotesis y tesis. Forma el inverso (~p -> ~q), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
-    contraReciprocal:
-      "Identifica hipotesis y tesis. Forma la contra-reciproca (~q -> ~p), cambiando lo minimo. Manten el LaTeX intacto. Devuelve solo la proposicion.\n\n{{condicion}}",
-  },
+  propositionPrompts: { ...DEFAULT_PROPOSITION_PROMPTS },
 };
 
 const findAttempt = (topics: Topic[], attemptId: string): { attempt: Attempt; theme: Theme; topic: Topic } | null => {
@@ -399,7 +401,7 @@ export const useAppStore = create<AppState>()(
           settings: {
             ...state.settings,
             propositionPrompts: {
-              ...state.settings.propositionPrompts,
+              ...(state.settings.propositionPrompts ?? DEFAULT_PROPOSITION_PROMPTS),
               [kind]: prompt,
             },
           },
