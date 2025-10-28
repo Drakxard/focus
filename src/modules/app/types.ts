@@ -101,6 +101,7 @@ export interface SettingsState {
   error?: string;
   propositionPrompts: PropositionPrompts;
   themeMode: "dark" | "light";
+  latexFontScale: number;
 }
 
 export interface PromptBundle {

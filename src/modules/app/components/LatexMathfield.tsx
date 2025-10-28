@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MathfieldElement } from "mathlive";
 import "mathlive/static.css";
+import { useAppStore } from "../state/appStore";
 
 interface LatexMathfieldProps {
   value: string;
@@ -11,15 +12,17 @@ interface LatexMathfieldProps {
   fontSizeRem?: number;
 }
 
-export const LatexMathfield = ({ value, onChange, className, placeholder, fontSizeRem = 1 }: LatexMathfieldProps) => {
+export const LatexMathfield = ({ value, onChange, className, placeholder, fontSizeRem }: LatexMathfieldProps) => {
   const fieldRef = useRef<MathfieldElement | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const globalFontScale = useAppStore((state) => state.settings.latexFontScale ?? 1);
+  const effectiveFontSize = fontSizeRem ?? globalFontScale;
   const containerStyle = useMemo<CSSProperties>(
     () => ({
-      fontSize: `${fontSizeRem}rem`,
-      "--latex-mathfield-scale": `${fontSizeRem}`,
+      fontSize: `${effectiveFontSize}rem`,
+      "--latex-mathfield-scale": `${effectiveFontSize}`,
     }),
-    [fontSizeRem]
+    [effectiveFontSize]
   );
 
   useEffect(() => {

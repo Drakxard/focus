@@ -29,7 +29,7 @@ interface AppState {
   topics: Topic[];
   drafts: Record<string, DraftState>;
   settings: SettingsState;
-  setDraftValue: (id: string, value: string) => void;
+  setDraftValue: (id: string, value: string) => void;
   setDraftStatus: (id: string, status: AutosaveStatus, error?: string) => void;
   clearDraft: (id: string) => void;
   upsertTopic: (subject: string, topicId?: string) => Topic;
@@ -53,6 +53,7 @@ interface AppState {
   setSelectedModel: (modelId: string) => void;
   setSettingsStatus: (status: SettingsState["status"], error?: string) => void;
   setPropositionPrompt: (kind: PropositionPromptKind, prompt: string) => void;
+  setLatexFontScale: (scale: number) => void;
   exportTopic: (topicId: string) => string | null;
   setThemeMode: (mode: SettingsState["themeMode"]) => void;
 }
@@ -75,6 +76,7 @@ const initialSettings: SettingsState = {
   status: "idle",
   propositionPrompts: { ...DEFAULT_PROPOSITION_PROMPTS },
   themeMode: "dark",
+  latexFontScale: 1,
 };
 
 const findAttempt = (topics: Topic[], attemptId: string): { attempt: Attempt; theme: Theme; topic: Topic } | null => {
@@ -439,6 +441,15 @@ export const useAppStore = create<AppState>()(
               ...(state.settings.propositionPrompts ?? DEFAULT_PROPOSITION_PROMPTS),
               [kind]: prompt,
             },
+          },
+        }));
+      },
+      setLatexFontScale: (scale) => {
+        const normalized = Number.isFinite(scale) ? Math.min(2, Math.max(0.6, scale)) : 1;
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            latexFontScale: normalized,
           },
         }));
       },

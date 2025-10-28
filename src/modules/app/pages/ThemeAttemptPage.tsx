@@ -4,6 +4,7 @@ import { LatexMathfield } from "../components/LatexMathfield";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, Theme, Topic } from "../types";
+import { useAppStore } from "../state/appStore";
 
 interface ThemeAttemptPageProps {
   topic: Topic;
@@ -203,7 +204,8 @@ export const ThemeAttemptPage = ({
   const draftId = `attempt-draft-${theme.themeId}`;
   const { value: latexContent, setValue: setLatexContent, status } = useAutosaveDraft(draftId, "");
   const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
-  const [latexFontScale, setLatexFontScale] = useState(1);
+  const latexFontScale = useAppStore((state) => state.settings.latexFontScale ?? 1);
+  const updateLatexFontScale = useAppStore((state) => state.setLatexFontScale);
   const [error, setError] = useState<string | null>(null);
 
   const handleLatexChange = (next: string) => {
@@ -213,11 +215,9 @@ export const ThemeAttemptPage = ({
   };
 
   const adjustLatexFont = (direction: "increase" | "decrease") => {
-    setLatexFontScale((prev) => {
-      const delta = direction === "increase" ? 0.1 : -0.1;
-      const next = Math.min(2, Math.max(0.6, +(prev + delta).toFixed(2)));
-      return next;
-    });
+    const delta = direction === "increase" ? 0.1 : -0.1;
+    const next = Math.round((latexFontScale + delta) * 100) / 100;
+    updateLatexFontScale(next);
   };
   const [activePane, setActivePane] = useState(0);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
