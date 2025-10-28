@@ -1787,6 +1787,11 @@ export const App = () => {
 
 
         }
+        const handleOpenReview = (attemptId: string, feedbackId: string) => {
+          pushRoute({ name: "concept", attemptId, feedbackId });
+        };
+
+
 
 
 
@@ -1811,6 +1816,10 @@ export const App = () => {
 
 
             onSubmit={(content) => handleAttemptSubmit(topic.topicId, theme.themeId, content)}
+
+
+
+            onOpenReview={handleOpenReview}
 
 
 
