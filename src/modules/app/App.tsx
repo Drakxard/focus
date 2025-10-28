@@ -1099,6 +1099,85 @@ export const App = () => {
 
 
 
+  const handleRefreshCritique = useCallback(
+
+    (attemptId: string) => {
+
+      const attemptData = findAttemptGlobal(useAppStore.getState().topics, attemptId);
+
+      if (!attemptData) {
+
+        showToast("No se encontro el intento para actualizar.", "error");
+
+        return;
+
+      }
+
+      const { attempt, theme } = attemptData;
+
+      if (attempt.cycles >= MAX_CYCLES) {
+
+        showToast("Este intento alcanzo el limite de ciclos.", "error");
+
+        return;
+
+      }
+
+      const latestContent = attempt.versions[0]?.content?.trim();
+
+      if (!latestContent) {
+
+        showToast("No hay contenido para analizar.", "error");
+
+        return;
+
+      }
+
+      try {
+
+        ensureModelSelected();
+
+      } catch (error) {
+
+        showToast(error instanceof Error ? error.message : String(error), "error");
+
+        return;
+
+      }
+
+      setAttemptStatus(attempt.attemptId, "analyzing");
+
+      incrementAttemptCycle(attempt.attemptId);
+
+      const promptText = buildFeedbackPrompt({
+
+        themeTitle: theme.title,
+
+        userContent: latestContent,
+
+        attemptId: attempt.attemptId,
+
+      });
+
+      const prompt: PromptBundle = {
+
+        prompt: promptText,
+
+        context: latestContent,
+
+      };
+
+      setAnalysisError(null);
+
+      replaceRoute({ name: "analyzing", attemptId: attempt.attemptId, prompt, retries: 0 });
+
+    },
+
+    [ensureModelSelected, incrementAttemptCycle, replaceRoute, setAnalysisError, setAttemptStatus, showToast]
+
+  );
+
+
   const fetchFeedback = useCallback(
 
 
@@ -1922,6 +2001,10 @@ export const App = () => {
 
 
 
+            onOpenSettings={() => setSettingsOpen(true)}
+
+
+
             onBack={history.length > 1 ? goBack : undefined}
 
 
@@ -2014,6 +2097,10 @@ export const App = () => {
 
 
 
+            onOpenSettings={() => setSettingsOpen(true)}
+
+
+
             onBack={goBack}
 
 
@@ -2088,6 +2175,14 @@ export const App = () => {
 
 
             onOpenReview={handleOpenReview}
+
+
+
+            onRefreshFeedback={handleRefreshCritique}
+
+
+
+            onOpenSettings={() => setSettingsOpen(true)}
 
 
 
@@ -2219,6 +2314,10 @@ export const App = () => {
 
 
 
+            onOpenSettings={() => setSettingsOpen(true)}
+
+
+
           />
 
 
@@ -2276,6 +2375,10 @@ export const App = () => {
 
 
             onBack={goBack}
+
+
+
+            onOpenSettings={() => setSettingsOpen(true)}
 
 
 
@@ -2355,6 +2458,10 @@ export const App = () => {
 
 
 
+            onReloadFeedback={() => handleRefreshCritique(attempt.attemptId)}
+
+
+
             onReloadConcept={() => requestConceptForAttempt(attempt, feedback)}
 
 
@@ -2372,6 +2479,10 @@ export const App = () => {
 
 
             limitReached={attempt.cycles >= MAX_CYCLES}
+
+
+
+            onOpenSettings={() => setSettingsOpen(true)}
 
 
 
@@ -2428,6 +2539,10 @@ export const App = () => {
 
 
             onBack={goBack}
+
+
+
+            onOpenSettings={() => setSettingsOpen(true)}
 
 
 
@@ -2496,6 +2611,10 @@ export const App = () => {
 
 
             onBack={goBack}
+
+
+
+            onOpenSettings={() => setSettingsOpen(true)}
 
 
 

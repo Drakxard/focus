@@ -11,11 +11,12 @@ interface ExerciseAnalyticalPageProps {
   exercise: ExercisePayload;
   onBack: () => void;
   onSubmit: (answer: string) => void;
+  onOpenSettings: () => void;
 }
 
 const MAX_CHARS = 10000;
 
-export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit }: ExerciseAnalyticalPageProps) => {
+export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit, onOpenSettings }: ExerciseAnalyticalPageProps) => {
   const prompt = parseAnalyticalPayload(exercise.payload);
   const draftId = `exercise-${exercise.exerciseId}`;
   const { value, setValue, status, clear } = useAutosaveDraft(draftId, "");
@@ -43,7 +44,14 @@ export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit }: 
           ← Volver
         </button>
       }
-      right={<StatusBadge status={status} />}
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <StatusBadge status={status} />
+        </div>
+      }
     >
       <section className="card">
         <h3>Consigna</h3>

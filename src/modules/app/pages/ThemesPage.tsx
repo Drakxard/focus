@@ -8,9 +8,10 @@ interface ThemesPageProps {
   initialThemes?: string[];
   onConfirm: (themes: string[]) => void;
   onBack: () => void;
+  onOpenSettings: () => void;
 }
 
-export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }: ThemesPageProps) => {
+export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack, onOpenSettings }: ThemesPageProps) => {
   const [themes, setThemes] = useState(initialThemes.length ? initialThemes : [""]);
   const { status } = useAutosaveList(draftId, themes);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,14 @@ export const ThemesPage = ({ draftId, initialThemes = [""], onConfirm, onBack }:
           ← Volver
         </button>
       }
-      right={<StatusBadge status={status} />}
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <StatusBadge status={status} />
+        </div>
+      }
     >
       <form className="card" onSubmit={handleSubmit}>
         <div className="themes-list">

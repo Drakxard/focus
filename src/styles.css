@@ -52,7 +52,8 @@ button.ghost.danger {
   color: #ff9a9a;
 }
 
-.home-toolbar {
+.home-toolbar,
+.page-toolbar {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;

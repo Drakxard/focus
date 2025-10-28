@@ -9,10 +9,12 @@ interface ConceptPageProps {
   isConceptLoading: boolean;
   conceptError?: string;
   onReloadConcept: () => void;
+  onReloadFeedback: () => void;
   onBack: () => void;
   onOpenAnalytical: () => void;
   onOpenProposition: () => void;
   limitReached: boolean;
+  onOpenSettings: () => void;
 }
 
 export const ConceptPage = ({
@@ -22,23 +24,37 @@ export const ConceptPage = ({
   isConceptLoading,
   conceptError,
   onReloadConcept,
+  onReloadFeedback,
   onBack,
   onOpenAnalytical,
   onOpenProposition,
   limitReached,
+  onOpenSettings,
 }: ConceptPageProps) => {
   return (
     <AppShell
-      title="Repaso de crítica"
-      subtitle={`Intento ${attempt.latestVersion} · Ciclos: ${attempt.cycles}/5`}
+      title="Repaso de critica"
+      subtitle={`Intento ${attempt.latestVersion} | Ciclos: ${attempt.cycles}/5`}
       left={
         <button type="button" onClick={onBack}>
-          ← Volver
+          &larr; Volver
         </button>
+      }
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+        </div>
       }
     >
       <section className="card">
-        <h2>Crítica</h2>
+        <div className="card__header">
+          <h2>Critica</h2>
+          <button type="button" onClick={onReloadFeedback}>
+            Actualizar critica
+          </button>
+        </div>
         <p>
           <strong>{feedback.summary}</strong>
         </p>
@@ -53,12 +69,12 @@ export const ConceptPage = ({
       </section>
       <section className="card">
         <div className="card__header">
-          <h2>Teoría complementaria</h2>
+          <h2>Teoria complementaria</h2>
           <button type="button" className="ghost" onClick={onReloadConcept} disabled={isConceptLoading}>
             Actualizar
           </button>
         </div>
-        {isConceptLoading ? <p>Cargando explicación…</p> : null}
+        {isConceptLoading ? <p>Cargando explicacion...</p> : null}
         {conceptError ? <p className="error-text">{conceptError}</p> : null}
         {conceptText ? (
           <LatexRenderer content={conceptText} fallback={<p>{conceptText}</p>} />
@@ -66,28 +82,21 @@ export const ConceptPage = ({
       </section>
       <section className="card horizontal">
         <div>
-          <h3>Ejercicio analítico</h3>
+          <h3>Ejercicio analitico</h3>
           <p>Crea un ejercicio en LaTeX para profundizar en el concepto detectado.</p>
           <button type="button" onClick={onOpenAnalytical} disabled={limitReached}>
-            Ejercicio analítico
+            Ejercicio analitico
           </button>
         </div>
         <div>
-          <h3>Ejercicios proposición</h3>
-          <p>Recíproco, inverso y contrarrecíproco sin identificar cuál es cuál.</p>
+          <h3>Ejercicios proposicion</h3>
+          <p>Reciproco, inverso y contrarreciproco sin identificar cual es cual.</p>
           <button type="button" onClick={onOpenProposition} disabled={limitReached}>
-            Ejercicios proposición
+            Ejercicios proposicion
           </button>
         </div>
-        {limitReached ? <p className="warning">Se alcanzó el límite de 5 ciclos para este intento.</p> : null}
+        {limitReached ? <p className="warning">Se alcanzo el limite de 5 ciclos para este intento.</p> : null}
       </section>
     </AppShell>
   );
 };
-
-
-
-
-
-
-

@@ -11,6 +11,7 @@ interface ExercisePropositionPageProps {
   exercise: ExercisePayload;
   onBack: () => void;
   onSubmit: (payload: { answer: string; proposition: string; index: number }) => void;
+  onOpenSettings: () => void;
 }
 
 const MAX_CHARS = 10000;
@@ -37,7 +38,7 @@ const StatementCard = ({ exerciseId, statement, index, onSubmit }: StatementCard
 
   return (
     <form className="card" onSubmit={handleSubmit}>
-      <h3>Proposición {index + 1}</h3>
+      <h3>Proposicion {index + 1}</h3>
       <LatexRenderer content={statement} />
       <textarea
         value={value}
@@ -58,17 +59,30 @@ const StatementCard = ({ exerciseId, statement, index, onSubmit }: StatementCard
   );
 };
 
-export const ExercisePropositionPage = ({ attempt, exercise, onBack, onSubmit }: ExercisePropositionPageProps) => {
+export const ExercisePropositionPage = ({
+  attempt,
+  exercise,
+  onBack,
+  onSubmit,
+  onOpenSettings,
+}: ExercisePropositionPageProps) => {
   const statements = parsePropositionPayload(exercise.payload);
 
   return (
     <AppShell
-      title="Ejercicios proposición"
+      title="Ejercicios proposicion"
       subtitle={`Intento ${attempt.latestVersion}`}
       left={
         <button type="button" onClick={onBack}>
-          ← Volver
+          &larr; Volver
         </button>
+      }
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+        </div>
       }
     >
       <div className="grid">

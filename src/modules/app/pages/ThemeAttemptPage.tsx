@@ -10,6 +10,8 @@ interface ThemeAttemptPageProps {
   onBack: () => void;
   onSubmit: (content: string) => void;
   onOpenReview?: (attemptId: string, feedbackId: string) => void;
+  onRefreshFeedback?: (attemptId: string) => void;
+  onOpenSettings: () => void;
 }
 
 const MAX_CHARS = 10000;
@@ -30,9 +32,11 @@ const summarize = (text: string, limit = 220) => {
 const LatestFeedbackPanel = ({
   attempt,
   onOpenReview,
+  onRefreshFeedback,
 }: {
   attempt: Attempt | null;
   onOpenReview?: (attemptId: string, feedbackId: string) => void;
+  onRefreshFeedback?: (attemptId: string) => void;
 }) => {
   if (!attempt) {
     return (
@@ -104,7 +108,7 @@ const LatestFeedbackPanel = ({
         ) : null}
       </div>
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <button type="button" onClick={() => onOpenReview?.(attempt.attemptId, latestFeedback.feedbackId)}>
+        <button type="button" onClick={() => onRefreshFeedback?.(attempt.attemptId)}>
           Actualizar critica
         </button>
         <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, latestFeedback.feedbackId)}>
@@ -119,10 +123,12 @@ const AttemptHistory = ({
   attempts,
   onOpenReview,
   onSelectAttempt,
+  onRefreshFeedback,
 }: {
   attempts: Attempt[];
   onOpenReview?: (attemptId: string, feedbackId: string) => void;
   onSelectAttempt?: (attemptId: string) => void;
+  onRefreshFeedback?: (attemptId: string) => void;
 }) => {
   return (
     <section className="card">
@@ -164,9 +170,14 @@ const AttemptHistory = ({
                   Ver completo
                 </button>
                 {feedback ? (
-                  <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, feedback.feedbackId)}>
-                    Abrir critica
-                  </button>
+                  <>
+                    <button type="button" onClick={() => onRefreshFeedback?.(attempt.attemptId)}>
+                      Actualizar critica
+                    </button>
+                    <button type="button" className="ghost" onClick={() => onOpenReview?.(attempt.attemptId, feedback.feedbackId)}>
+                      Abrir critica
+                    </button>
+                  </>
                 ) : (
                   <span className="muted">Sin critica registrada</span>
                 )}
@@ -179,7 +190,15 @@ const AttemptHistory = ({
   );
 };
 
-export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview }: ThemeAttemptPageProps) => {
+export const ThemeAttemptPage = ({
+  topic,
+  theme,
+  onBack,
+  onSubmit,
+  onOpenReview,
+  onRefreshFeedback,
+  onOpenSettings,
+}: ThemeAttemptPageProps) => {
   const draftId = `attempt-draft-${theme.themeId}`;
   const { value, setValue, status } = useAutosaveDraft(draftId, "");
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +266,13 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
       key: "feedback",
       title: "Ultima critica",
       description: "Revisa la observacion mas reciente antes de iterar de nuevo.",
-      content: <LatestFeedbackPanel attempt={latestAttempt} onOpenReview={onOpenReview} />,
+      content: (
+        <LatestFeedbackPanel
+          attempt={latestAttempt}
+          onOpenReview={onOpenReview}
+          onRefreshFeedback={onRefreshFeedback}
+        />
+      ),
     },
     {
       key: "history",
@@ -262,6 +287,11 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
               setSelectedAttemptId(attemptId);
               setActivePane(basePanes.length);
             }}
+            onSelectAttempt={(attemptId) => {
+              setSelectedAttemptId(attemptId);
+              setActivePane(basePanes.length);
+            }}
+            onRefreshFeedback={onRefreshFeedback}
           />
         ) : (
           <section className="card">
@@ -289,16 +319,23 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
                   {formatDateTime(selectedAttempt.updatedAt)}
                 </p>
               </div>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => {
-                  setSelectedAttemptId(null);
-                  setActivePane(historyIndex);
-                }}
-              >
-                Cerrar
-              </button>
+              <div className="page-toolbar">
+                {onRefreshFeedback ? (
+                  <button type="button" onClick={() => onRefreshFeedback(selectedAttempt.attemptId)}>
+                    Actualizar critica
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => {
+                    setSelectedAttemptId(null);
+                    setActivePane(historyIndex);
+                  }}
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
             <div className="history-detail">
               <div className="history-detail__column">
@@ -372,7 +409,14 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
           &larr; Volver
         </button>
       }
-      right={<StatusBadge status={status} />}
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <StatusBadge status={status} />
+        </div>
+      }
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div

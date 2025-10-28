@@ -12,6 +12,7 @@ interface AnalyzingPageProps {
   retries: number;
   maxRetries: number;
   errorMessage?: string;
+  onOpenSettings: () => void;
 }
 
 export const AnalyzingPage = ({
@@ -24,6 +25,7 @@ export const AnalyzingPage = ({
   retries,
   maxRetries,
   errorMessage,
+  onOpenSettings,
 }: AnalyzingPageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +62,14 @@ export const AnalyzingPage = ({
         </button>
       }
       right={
-        <button type="button" onClick={() => onManualCopy(context.prompt)}>
-          Copiar para hacerlo manual
-        </button>
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <button type="button" onClick={() => onManualCopy(context.prompt)}>
+            Copiar para hacerlo manual
+          </button>
+        </div>
       }
     >
       <section className="card">

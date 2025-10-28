@@ -8,9 +8,10 @@ interface SubjectPageProps {
   initialValue?: string;
   onConfirm: (subject: string) => void;
   onBack?: () => void;
+  onOpenSettings: () => void;
 }
 
-export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack }: SubjectPageProps) => {
+export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack, onOpenSettings }: SubjectPageProps) => {
   const { value, setValue, status } = useAutosaveDraft(draftId, initialValue);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +36,14 @@ export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack }: S
           </button>
         ) : null
       }
-      right={<StatusBadge status={status} />}
+      right={
+        <div className="page-toolbar">
+          <button type="button" className="ghost" onClick={onOpenSettings}>
+            Ajustes
+          </button>
+          <StatusBadge status={status} />
+        </div>
+      }
     >
       <form className="card" onSubmit={handleSubmit}>
         <textarea
