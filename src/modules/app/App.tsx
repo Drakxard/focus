@@ -322,6 +322,14 @@ export const App = () => {
 
 
 
+  const removeTheme = useAppStore((state) => state.removeTheme);
+
+
+
+  const deleteTopic = useAppStore((state) => state.deleteTopic);
+
+
+
   const createAttempt = useAppStore((state) => state.createAttempt);
 
 
@@ -688,6 +696,254 @@ export const App = () => {
 
 
     goHome();
+
+
+
+  };
+
+
+
+  const handleAddThemeToTopic = (topicId: string) => {
+
+
+
+    const topic = topicMap.get(topicId);
+
+
+
+    if (!topic) {
+
+
+
+      showToast("Asignatura no encontrada.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const input = window.prompt(`Nuevo tema para "${topic.subject}"`, "");
+
+
+
+    if (input === null) return;
+
+
+
+    const title = input.trim();
+
+
+
+    if (!title) {
+
+
+
+      showToast("El titulo del tema no puede estar vacio.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const duplicate = topic.themes.some((theme) => theme.title.toLowerCase() === title.toLowerCase());
+
+
+
+    if (duplicate) {
+
+
+
+      showToast("Ya existe un tema con ese titulo.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    try {
+
+
+
+      addTheme(topicId, title);
+
+
+
+      showToast("Tema agregado.");
+
+
+
+    } catch (error) {
+
+
+
+      showToast(error instanceof Error ? error.message : String(error), "error");
+
+
+
+    }
+
+
+
+  };
+
+
+
+  const handleDeleteThemeFromTopic = (topicId: string, themeId: string) => {
+
+
+
+    const topic = topicMap.get(topicId);
+
+
+
+    if (!topic) {
+
+
+
+      showToast("Asignatura no encontrada.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const theme = topic.themes.find((item) => item.themeId === themeId);
+
+
+
+    if (!theme) {
+
+
+
+      showToast("Tema no encontrado.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const shouldDelete = window.confirm(`Eliminar tema "${theme.title}"? Esta accion no se puede deshacer.`);
+
+
+
+    if (!shouldDelete) return;
+
+
+
+    removeTheme(topicId, themeId);
+
+
+
+    showToast("Tema eliminado.");
+
+
+
+    if (currentRoute.name === "attempt" && currentRoute.themeId === themeId && currentRoute.topicId === topicId) {
+
+
+
+      goHome();
+
+
+
+    }
+
+
+
+  };
+
+
+
+  const handleDeleteTopic = (topicId: string) => {
+
+
+
+    const topic = topicMap.get(topicId);
+
+
+
+    if (!topic) {
+
+
+
+      showToast("Asignatura no encontrada.", "error");
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const shouldDelete = window.confirm(`Eliminar asignatura "${topic.subject}" y todos sus temas?`);
+
+
+
+    if (!shouldDelete) return;
+
+
+
+    deleteTopic(topicId);
+
+
+
+    showToast("Asignatura eliminada.");
+
+
+
+    if (
+
+
+
+      (currentRoute.name === "subject" || currentRoute.name === "themes" || currentRoute.name === "attempt") &&
+
+
+
+      "topicId" in currentRoute &&
+
+
+
+      currentRoute.topicId === topicId
+
+
+
+    ) {
+
+
+
+      goHome();
+
+
+
+    }
 
 
 
@@ -1611,6 +1867,18 @@ export const App = () => {
 
 
             onOpenTheme={handleOpenTheme}
+
+
+
+            onAddTheme={handleAddThemeToTopic}
+
+
+
+            onDeleteTheme={handleDeleteThemeFromTopic}
+
+
+
+            onDeleteTopic={handleDeleteTopic}
 
 
 

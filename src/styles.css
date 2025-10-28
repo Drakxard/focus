@@ -41,6 +41,17 @@ button.ghost {
   color: #c9cffd;
 }
 
+button.danger {
+  background: #ff5c5c;
+  color: #ffffff;
+}
+
+button.ghost.danger {
+  background: transparent;
+  border-color: rgba(255, 92, 92, 0.6);
+  color: #ff9a9a;
+}
+
 .card {
   background: rgba(18, 21, 38, 0.85);
   border-radius: 1rem;
@@ -164,6 +175,13 @@ button.ghost {
   align-items: center;
 }
 
+.topic-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .topic-card__themes {
   display: grid;
   gap: 1rem;
@@ -182,6 +200,11 @@ button.ghost {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-card__actions {
+  display: flex;
   gap: 0.5rem;
 }
 

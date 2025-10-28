@@ -5,11 +5,22 @@ interface HomePageProps {
   topics: Topic[];
   onCreateTopic: () => void;
   onOpenTheme: (topicId: string, themeId: string) => void;
+  onAddTheme: (topicId: string) => void;
+  onDeleteTheme: (topicId: string, themeId: string) => void;
+  onDeleteTopic: (topicId: string) => void;
   onExportTopic: (topicId: string) => void;
   onOpenSettings: () => void;
 }
 
-const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) => {
+const ThemeSummary = ({
+  theme,
+  onOpen,
+  onDelete,
+}: {
+  theme: Theme;
+  onOpen: () => void;
+  onDelete: () => void;
+}) => {
   const latestAttempt = theme.attempts[0];
   const latestFeedback = latestAttempt?.feedbackHistory[0];
 
@@ -17,9 +28,14 @@ const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) =
     <div className="theme-card">
       <div className="theme-card__header">
         <h3>{theme.title}</h3>
-        <button type="button" onClick={onOpen}>
-          Abrir →
-        </button>
+        <div className="theme-card__actions">
+          <button type="button" onClick={onOpen}>
+            Abrir →
+          </button>
+          <button type="button" className="ghost danger" onClick={onDelete}>
+            Eliminar
+          </button>
+        </div>
       </div>
       {latestAttempt ? (
         <>
@@ -44,7 +60,16 @@ const ThemeSummary = ({ theme, onOpen }: { theme: Theme; onOpen: () => void }) =
   );
 };
 
-export const HomePage = ({ topics, onCreateTopic, onOpenTheme, onExportTopic, onOpenSettings }: HomePageProps) => {
+export const HomePage = ({
+  topics,
+  onCreateTopic,
+  onOpenTheme,
+  onAddTheme,
+  onDeleteTheme,
+  onDeleteTopic,
+  onExportTopic,
+  onOpenSettings,
+}: HomePageProps) => {
   return (
     <AppShell
       title="Página Inicial"
@@ -66,9 +91,17 @@ export const HomePage = ({ topics, onCreateTopic, onOpenTheme, onExportTopic, on
           <section className="topic-card" key={topic.topicId}>
             <header>
               <h2>{topic.subject}</h2>
-              <button type="button" className="ghost" onClick={() => onExportTopic(topic.topicId)}>
-                Exportar JSON
-              </button>
+              <div className="topic-card__actions">
+                <button type="button" onClick={() => onAddTheme(topic.topicId)}>
+                  + Agregar tema
+                </button>
+                <button type="button" className="ghost" onClick={() => onExportTopic(topic.topicId)}>
+                  Exportar JSON
+                </button>
+                <button type="button" className="ghost danger" onClick={() => onDeleteTopic(topic.topicId)}>
+                  Eliminar asignatura
+                </button>
+              </div>
             </header>
             <div className="topic-card__themes">
               {topic.themes.map((theme) => (
@@ -76,6 +109,7 @@ export const HomePage = ({ topics, onCreateTopic, onOpenTheme, onExportTopic, on
                   key={theme.themeId}
                   theme={theme}
                   onOpen={() => onOpenTheme(topic.topicId, theme.themeId)}
+                  onDelete={() => onDeleteTheme(topic.topicId, theme.themeId)}
                 />
               ))}
             </div>

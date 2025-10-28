@@ -33,9 +33,11 @@ interface AppState {
   setDraftStatus: (id: string, status: AutosaveStatus, error?: string) => void;
   clearDraft: (id: string) => void;
   upsertTopic: (subject: string, topicId?: string) => Topic;
-  addTheme: (topicId: string, title: string) => Theme;
-  updateThemeTitle: (topicId: string, themeId: string, title: string) => void;
-  createAttempt: (params: { topicId: string; themeId: string; content: string }) => Attempt;
+  addTheme: (topicId: string, title: string) => Theme;
+  updateThemeTitle: (topicId: string, themeId: string, title: string) => void;
+  removeTheme: (topicId: string, themeId: string) => void;
+  deleteTopic: (topicId: string) => void;
+  createAttempt: (params: { topicId: string; themeId: string; content: string }) => Attempt;
   pushAttemptVersion: (params: {
     attemptId: string;
     content: string;
@@ -189,11 +191,11 @@ export const useAppStore = create<AppState>()(
         }
         return createdTheme;
       },
-      updateThemeTitle: (topicId, themeId, title) => {
-        set((state) => ({
-          topics: state.topics.map((topic) => {
-            if (topic.topicId !== topicId) return topic;
-            return {
+      updateThemeTitle: (topicId, themeId, title) => {
+        set((state) => ({
+          topics: state.topics.map((topic) => {
+            if (topic.topicId !== topicId) return topic;
+            return {
               ...topic,
               themes: topic.themes.map((theme) =>
                 theme.themeId === themeId
@@ -395,6 +397,36 @@ export const useAppStore = create<AppState>()(
             status,
             error,
           },
+        }));
+      },
+      removeTheme: (topicId, themeId) => {
+        set((state) => {
+          let removed = false;
+          const topics = state.topics.map((topic) => {
+            if (topic.topicId !== topicId) return topic;
+            const nextThemes = topic.themes.filter((theme) => {
+              if (theme.themeId === themeId) {
+                removed = true;
+                return false;
+              }
+              return true;
+            });
+            if (!removed) return topic;
+            return {
+              ...topic,
+              themes: nextThemes,
+              updatedAt: makeTimestamp(),
+            };
+          });
+          if (!removed) {
+            return { topics: state.topics };
+          }
+          return { topics };
+        });
+      },
+      deleteTopic: (topicId) => {
+        set((state) => ({
+          topics: state.topics.filter((topic) => topic.topicId !== topicId),
         }));
       },
       setPropositionPrompt: (kind, prompt) => {
