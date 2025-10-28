@@ -16,6 +16,8 @@ interface ThemeAttemptPageProps {
 }
 
 const MAX_CHARS = 10000;
+const LATEX_ALIGNMENTS = ["left", "center", "right"] as const;
+type LatexAlignment = (typeof LATEX_ALIGNMENTS)[number];
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "Fecha desconocida";
@@ -205,9 +207,19 @@ export const ThemeAttemptPage = ({
   const latexDraftId = `attempt-latex-draft-${theme.themeId}`;
   const { value: latexContent, setValue: setLatexContent } = useAutosaveDraft(latexDraftId, "");
   const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
+  const latexAlignDraftId = `attempt-latex-align-${theme.themeId}`;
+  const { value: latexAlignValue, setValue: setLatexAlignValue } = useAutosaveDraft(latexAlignDraftId, "center");
+  const latexAlign: LatexAlignment =
+    latexAlignValue === "left" || latexAlignValue === "right" || latexAlignValue === "center" ? (latexAlignValue as LatexAlignment) : "center";
   const [error, setError] = useState<string | null>(null);
   const [activePane, setActivePane] = useState(0);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
+
+  const handleAlignSelect = (option: LatexAlignment) => {
+    if (option !== latexAlign) {
+      setLatexAlignValue(option);
+    }
+  };
 
   const latestAttempt = theme.attempts[0] ?? null;
   const selectedAttempt = selectedAttemptId
@@ -242,7 +254,25 @@ export const ThemeAttemptPage = ({
         <form className="card" onSubmit={handleSubmit}>
           <section className="latex-editor">
             <div className="latex-editor__header">
-              <h3 style={{ margin: 0 }}>Expresion LaTeX</h3>
+              <div className="latex-editor__title-group">
+                <h3 style={{ margin: 0 }}>Expresion LaTeX</h3>
+                <div className="latex-editor__controls">
+                  <span className="latex-editor__label">Alinear</span>
+                  <div className="latex-editor__segmented">
+                    {LATEX_ALIGNMENTS.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`segmented-button${latexAlign === option ? " is-active" : ""}`}
+                        aria-pressed={latexAlign === option}
+                        onClick={() => handleAlignSelect(option)}
+                      >
+                        {option === "left" ? "Izquierda" : option === "center" ? "Centro" : "Derecha"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <button
                 type="button"
                 className="ghost"
@@ -254,6 +284,7 @@ export const ThemeAttemptPage = ({
             {latexMode === "visual" ? (
               <LatexMathfield
                 className="latex-editor__mathfield"
+                alignment={latexAlign}
                 value={latexContent}
                 onChange={setLatexContent}
                 placeholder="Escribe directamente aqui y se renderiza automaticamente..."

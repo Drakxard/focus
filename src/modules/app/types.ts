@@ -100,6 +100,7 @@ export interface SettingsState {
   status: "idle" | "loading" | "error";
   error?: string;
   propositionPrompts: PropositionPrompts;
+  themeMode: "dark" | "light";
 }
 
 export interface PromptBundle {

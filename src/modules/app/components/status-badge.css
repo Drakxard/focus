@@ -4,21 +4,21 @@
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-status-background);
 }
 
 .status-badge--guardado {
-  color: #8ef5b8;
+  color: var(--color-status-guardado);
 }
 
 .status-badge--guardando {
-  color: #ffd27f;
+  color: var(--color-status-guardando);
 }
 
 .status-badge--error {
-  color: #ff9b9b;
+  color: var(--color-status-error);
 }
 
 .status-badge--idle {
-  color: #d0cfe4;
+  color: var(--color-status-idle);
 }

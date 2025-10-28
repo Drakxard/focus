@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 import "./layout.css";
 
 interface AppShellProps {
@@ -18,7 +19,10 @@ export const AppShell = ({ title, subtitle, left, right, children }: AppShellPro
           <h1>{title}</h1>
           {subtitle ? <p>{subtitle}</p> : null}
         </div>
-        <div className="app-shell__slot app-shell__slot--right">{right}</div>
+        <div className="app-shell__slot app-shell__slot--right">
+          <ThemeToggle />
+          {right}
+        </div>
       </header>
       <main className="app-shell__content">{children}</main>
     </div>

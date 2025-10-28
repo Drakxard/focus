@@ -54,6 +54,7 @@ interface AppState {
   setSettingsStatus: (status: SettingsState["status"], error?: string) => void;
   setPropositionPrompt: (kind: PropositionPromptKind, prompt: string) => void;
   exportTopic: (topicId: string) => string | null;
+  setThemeMode: (mode: SettingsState["themeMode"]) => void;
 }
 
 export const DEFAULT_PROPOSITION_PROMPTS: PropositionPrompts = {
@@ -73,6 +74,7 @@ const initialSettings: SettingsState = {
   availableModels: [],
   status: "idle",
   propositionPrompts: { ...DEFAULT_PROPOSITION_PROMPTS },
+  themeMode: "dark",
 };
 
 const findAttempt = (topics: Topic[], attemptId: string): { attempt: Attempt; theme: Theme; topic: Topic } | null => {
@@ -382,14 +384,14 @@ export const useAppStore = create<AppState>()(
           },
         }));
       },
-      setSelectedModel: (selectedModel) => {
-        set((state) => ({
-          settings: {
-            ...state.settings,
-            selectedModel,
-          },
-        }));
-      },
+      setSelectedModel: (selectedModel) => {
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            selectedModel,
+          },
+        }));
+      },
       setSettingsStatus: (status, error) => {
         set((state) => ({
           settings: {
@@ -437,6 +439,14 @@ export const useAppStore = create<AppState>()(
               ...(state.settings.propositionPrompts ?? DEFAULT_PROPOSITION_PROMPTS),
               [kind]: prompt,
             },
+          },
+        }));
+      },
+      setThemeMode: (mode) => {
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            themeMode: mode,
           },
         }));
       },

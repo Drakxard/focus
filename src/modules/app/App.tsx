@@ -367,6 +367,13 @@ export const App = () => {
 
 
   const settings = useAppStore((state) => state.settings);
+  const themeMode = settings.themeMode ?? "dark";
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const mode = themeMode === "light" ? "light" : "dark";
+    document.body.dataset.theme = mode;
+    document.documentElement.style.colorScheme = mode;
+  }, [themeMode]);
 
 
 
