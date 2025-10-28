@@ -32,8 +32,14 @@ const ThemeSummary = ({
           <button type="button" onClick={onOpen}>
             Abrir →
           </button>
-          <button type="button" className="ghost danger" onClick={onDelete}>
-            Eliminar
+          <button
+            type="button"
+            className="ghost danger"
+            onClick={onDelete}
+            aria-label="Eliminar tema"
+            title="Eliminar tema"
+            >
+            x
           </button>
         </div>
       </div>
@@ -92,14 +98,25 @@ export const HomePage = ({
             <header>
               <h2>{topic.subject}</h2>
               <div className="topic-card__actions">
-                <button type="button" onClick={() => onAddTheme(topic.topicId)}>
-                  + Agregar tema
+                <button
+                  type="button"
+                  onClick={() => onAddTheme(topic.topicId)}
+                  aria-label="Agregar tema"
+                  title="Agregar tema"
+                >
+                  +
                 </button>
                 <button type="button" className="ghost" onClick={() => onExportTopic(topic.topicId)}>
                   Exportar JSON
                 </button>
-                <button type="button" className="ghost danger" onClick={() => onDeleteTopic(topic.topicId)}>
-                  Eliminar asignatura
+                <button
+                  type="button"
+                  className="ghost danger"
+                  onClick={() => onDeleteTopic(topic.topicId)}
+                  aria-label="Eliminar asignatura"
+                  title="Eliminar asignatura"
+                >
+                  x
                 </button>
               </div>
             </header>
