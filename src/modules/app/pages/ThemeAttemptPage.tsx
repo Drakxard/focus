@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "../components/Layout";
-import { LatexRenderer } from "../components/LatexRenderer";
+import { LatexMathfield } from "../components/LatexMathfield";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, Theme, Topic } from "../types";
@@ -204,12 +204,10 @@ export const ThemeAttemptPage = ({
   const { value, setValue, status } = useAutosaveDraft(draftId, "");
   const latexDraftId = `attempt-latex-draft-${theme.themeId}`;
   const { value: latexContent, setValue: setLatexContent } = useAutosaveDraft(latexDraftId, "");
-  const [isLatexEditing, setIsLatexEditing] = useState(false);
+  const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
   const [error, setError] = useState<string | null>(null);
   const [activePane, setActivePane] = useState(0);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
-
-  const hasLatexContent = latexContent.trim().length > 0;
 
   const latestAttempt = theme.attempts[0] ?? null;
   const selectedAttempt = selectedAttemptId
@@ -244,19 +242,26 @@ export const ThemeAttemptPage = ({
         <form className="card" onSubmit={handleSubmit}>
           <section className="latex-editor">
             <div className="latex-editor__header">
-              <h3 style={{ margin: 0 }}>Carga latex</h3>
+              <h3 style={{ margin: 0 }}>Expresion LaTeX</h3>
               <button
                 type="button"
                 className="ghost"
-                onClick={() => setIsLatexEditing((prev) => !prev)}
+                onClick={() => setLatexMode((prev) => (prev === "visual" ? "code" : "visual"))}
               >
-                {isLatexEditing ? "Render" : "Edit"}
+                {latexMode === "visual" ? "Ver codigo" : "Render interactivo"}
               </button>
             </div>
-            {isLatexEditing ? (
+            {latexMode === "visual" ? (
+              <LatexMathfield
+                className="latex-editor__mathfield"
+                value={latexContent}
+                onChange={setLatexContent}
+                placeholder="Escribe directamente aqui y se renderiza automaticamente..."
+              />
+            ) : (
               <>
                 <label className="sr-only" htmlFor="attempt-latex">
-                  Editor de expresiones LaTeX
+                  Codigo LaTeX
                 </label>
                 <textarea
                   id="attempt-latex"
@@ -266,12 +271,6 @@ export const ThemeAttemptPage = ({
                   className="text-input code latex-editor__textarea"
                 />
               </>
-            ) : hasLatexContent ? (
-              <div className="latex-editor__preview">
-                <LatexRenderer content={latexContent} />
-              </div>
-            ) : (
-              <div className="latex-editor__placeholder">Carga latex</div>
             )}
           </section>
           <label className="sr-only" htmlFor="attempt-content">

@@ -10,12 +10,14 @@
     "lint": "eslint . --ext ts,tsx --max-warnings 0"
   },
   "dependencies": {
+    "katex": "^0.16.9",
+    "mathlive": "^0.107.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zustand": "^4.5.2",
-    "katex": "^0.16.9"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@types/katex": "^0.16.7",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.5",
     "@typescript-eslint/eslint-plugin": "^7.14.1",
@@ -25,7 +27,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "typescript": "^5.5.4",
-    "vite": "^5.4.1",
-    "@types/katex": "^0.16.7"
+    "vite": "^5.4.1"
   }
 }
