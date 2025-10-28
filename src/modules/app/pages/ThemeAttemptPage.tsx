@@ -1,4 +1,4 @@
-﻿import { FormEvent, useState } from "react";
+import { FormEvent, useState } from "react";
 import { AppShell } from "../components/Layout";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -142,7 +142,7 @@ export const ThemeAttemptPage = ({ topic, theme, onBack, onSubmit, onOpenReview 
       subtitle={`Asignatura: ${topic.subject}`}
       left={
         <button type="button" onClick={onBack}>
-          < Volver
+          &larr; Volver
         </button>
       }
       right={<StatusBadge status={status} />}
