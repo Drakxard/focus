@@ -65,34 +65,18 @@ export const LatexMathfield = ({ value, onChange, className, placeholder, alignm
     if (!element) return;
 
     element.smartMode = true;
-    element.mathModeSpace = String.raw`\ `;
+    element.mathModeSpace = String.raw`\;`;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!element) return;
       if (event.defaultPrevented) return;
       const noModifiers = !event.altKey && !event.ctrlKey && !event.metaKey;
 
-      if (event.key === " " && noModifiers) {
-        event.preventDefault();
-        element.insert(String.raw`\ `, {
-          format: "latex",
-          insertionMode: "replaceSelection",
-          selectionMode: "after",
-        });
-        onChange(element.value);
-        return;
-      }
-
       if (event.key === "Enter" && noModifiers) {
         event.preventDefault();
-        element.insert(String.raw`\\`, {
+        element.insert("\\\\", {
           format: "latex",
           insertionMode: "replaceSelection",
-          selectionMode: "after",
-        });
-        element.insert("\n", {
-          format: "plain-text",
-          insertionMode: "insertAfter",
           selectionMode: "after",
         });
         onChange(element.value);
@@ -104,6 +88,13 @@ export const LatexMathfield = ({ value, onChange, className, placeholder, alignm
       element.removeEventListener("keydown", handleKeyDown);
     };
   }, [isReady, onChange]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    const element = fieldRef.current;
+    if (!element) return;
+    element.style.textAlign = alignment;
+  }, [alignment, isReady]);
 
   return (
     <div className={["latex-mathfield", className].filter(Boolean).join(" ")} data-align={alignment}>
