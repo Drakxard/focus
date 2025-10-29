@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { AppShell } from "../components/Layout";
+import { AutoTextarea } from "../components/AutoTextarea";
 import { LatexRenderer } from "../components/LatexRenderer";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -60,7 +61,7 @@ export const ExerciseAnalyticalPage = ({ attempt, exercise, onBack, onSubmit, on
       </section>
       <form className="card" onSubmit={handleSubmit}>
         <h3>Tu demostración</h3>
-        <textarea
+        <AutoTextarea
           value={value}
           onChange={(event) => {
             const next = event.target.value;

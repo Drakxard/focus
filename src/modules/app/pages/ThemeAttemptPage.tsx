@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { AppShell } from "../components/Layout";
 import { LatexMathfield } from "../components/LatexMathfield";
 import { StatusBadge } from "../components/StatusBadge";
+import { AutoTextarea } from "../components/AutoTextarea";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 import { Attempt, Theme, Topic } from "../types";
 import { useAppStore } from "../state/appStore";
@@ -300,7 +301,7 @@ export const ThemeAttemptPage = ({
                 <label className="sr-only" htmlFor="attempt-latex">
                   Codigo LaTeX
                 </label>
-                <textarea
+                <AutoTextarea
                   id="attempt-latex"
                   value={latexContent}
                   onChange={(event) => handleLatexChange(event.target.value)}

@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { AppShell } from "../components/Layout";
+import { AutoTextarea } from "../components/AutoTextarea";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
 
@@ -46,7 +47,7 @@ export const SubjectPage = ({ draftId, initialValue = "", onConfirm, onBack, onO
       }
     >
       <form className="card" onSubmit={handleSubmit}>
-        <textarea
+        <AutoTextarea
           value={value}
           maxLength={300}
           placeholder="Nombre de la asignatura o curso..."

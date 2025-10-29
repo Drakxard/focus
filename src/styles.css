@@ -188,7 +188,8 @@ button.ghost.danger {
   background: var(--color-input-bg);
   color: inherit;
   font: inherit;
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -506,8 +507,7 @@ button.ghost.danger {
 
 .latex-editor__textarea {
   min-height: 8rem;
-  max-height: 22rem;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .latex-editor__mathfield {

@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { AppShell } from "../components/Layout";
+import { AutoTextarea } from "../components/AutoTextarea";
 import { Attempt, AttemptFeedback } from "../types";
 import { parseFeedbackJson } from "../services/validators";
 
@@ -68,7 +69,7 @@ export const FeedbackPage = ({
       <form className="feedback-layout" onSubmit={handleSubmit}>
         <section className="card">
           <h3>Respuesta en JSON</h3>
-          <textarea
+          <AutoTextarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             className="text-input code"

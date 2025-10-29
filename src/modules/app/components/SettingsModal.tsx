@@ -2,6 +2,7 @@ import { FormEvent } from "react";
 import { DEFAULT_PROPOSITION_PROMPTS } from "../state/appStore";
 import { PropositionPromptKind, SettingsState } from "../types";
 import "./settings.css";
+import { AutoTextarea } from "./AutoTextarea";
 
 interface SettingsModalProps {
   open: boolean;
@@ -119,7 +120,7 @@ export const SettingsModal = ({
                 {label}
                 <small className="muted">{help}</small>
               </span>
-              <textarea
+              <AutoTextarea
                 value={prompts[kind]}
                 onChange={(event) => onPromptChange(kind, event.target.value)}
                 rows={4}

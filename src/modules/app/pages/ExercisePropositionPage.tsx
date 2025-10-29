@@ -1,5 +1,6 @@
 import { FormEvent } from "react";
 import { AppShell } from "../components/Layout";
+import { AutoTextarea } from "../components/AutoTextarea";
 import { StatusBadge } from "../components/StatusBadge";
 import { LatexRenderer } from "../components/LatexRenderer";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -40,7 +41,7 @@ const StatementCard = ({ exerciseId, statement, index, onSubmit }: StatementCard
     <form className="card" onSubmit={handleSubmit}>
       <h3>Proposicion {index + 1}</h3>
       <LatexRenderer content={statement} />
-      <textarea
+      <AutoTextarea
         value={value}
         onChange={(event) => {
           const next = event.target.value;
