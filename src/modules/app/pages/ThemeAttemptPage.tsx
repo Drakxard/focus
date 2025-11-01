@@ -3,6 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { AppShell } from "../components/Layout";
 import { LatexMathfield } from "../components/LatexMathfield";
 import { LatexRenderer } from "../components/LatexRenderer";
+import katex from "katex";
 import { StatusBadge } from "../components/StatusBadge";
 import { AutoTextarea } from "../components/AutoTextarea";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -19,7 +20,7 @@ interface ThemeAttemptPageProps {
 }
 
 const MAX_CHARS = 10000;
-const LATEX_PLACEHOLDER_REGEX = /\{\{latex\|([^|}]+)\|([^}]+)\}\}/;
+const LATEX_PLACEHOLDER_REGEX = /\{\{latex\|([^|}]+)\|([^|}]+)(?:\|([^}]+))?\}\}/;
 const createGlobalPlaceholderRegex = () => new RegExp(LATEX_PLACEHOLDER_REGEX.source, "g");
 
 interface PlaceholderMatch {
@@ -27,6 +28,7 @@ interface PlaceholderMatch {
   start: number;
   end: number;
   snippet: string;
+  dataUrl?: string;
 }
 
 const createPlaceholderId = () => {
@@ -48,19 +50,98 @@ const safeDecodeURIComponent = (value: string) => {
 const resolveLatexPlaceholders = (input: string) =>
   input.replace(createGlobalPlaceholderRegex(), (_, __, encoded) => safeDecodeURIComponent(encoded));
 
+let cachedKatexCss: string | null = null;
+let katexCssPromise: Promise<string | null> | null = null;
+
+const ensureKatexCss = async (): Promise<string | null> => {
+  if (cachedKatexCss !== null) return cachedKatexCss;
+  if (katexCssPromise) return katexCssPromise;
+  katexCssPromise = (async () => {
+    if (typeof document === "undefined") return null;
+    for (const styleElement of Array.from(document.querySelectorAll("style"))) {
+      const text = styleElement.textContent ?? "";
+      if (text.includes(".katex")) {
+        cachedKatexCss = text;
+        return cachedKatexCss;
+      }
+    }
+    for (const linkElement of Array.from(document.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[]) {
+      if (!linkElement.href.toLowerCase().includes("katex")) continue;
+      try {
+        const response = await fetch(linkElement.href);
+        if (response.ok) {
+          const cssText = await response.text();
+          cachedKatexCss = cssText;
+          return cachedKatexCss;
+        }
+      } catch {
+        // ignore fetch errors
+      }
+    }
+    return null;
+  })();
+  const result = await katexCssPromise;
+  katexCssPromise = null;
+  return result;
+};
+
+const generateLatexImageData = async (
+  snippet: string,
+  options: { color: string; background: string; fontSizePx: number; fontFamily: string }
+) => {
+  if (typeof document === "undefined") return null;
+  const host = document.createElement("div");
+  host.style.position = "absolute";
+  host.style.left = "-9999px";
+  host.style.top = "-9999px";
+  host.style.pointerEvents = "none";
+  host.style.fontSize = `${options.fontSizePx}px`;
+  host.style.color = options.color;
+  host.style.background = "transparent";
+  host.style.fontFamily = options.fontFamily;
+  document.body.appendChild(host);
+
+  try {
+    katex.render(snippet || "", host, { throwOnError: false });
+    const rect = host.getBoundingClientRect();
+    const padding = 6;
+    const width = Math.max(1, Math.ceil(rect.width) + padding * 2);
+    const height = Math.max(1, Math.ceil(rect.height) + padding * 2);
+    const cssText = await ensureKatexCss();
+    const sanitizedCss = cssText ? cssText.replace(/]]>/g, "]]&gt;") : "";
+    const styleBlock = sanitizedCss ? `<style type="text/css"><![CDATA[${sanitizedCss}]]></style>` : "";
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+  ${styleBlock}
+  <foreignObject width="100%" height="100%">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%;padding:${padding}px;background:${options.background};color:${options.color};font-size:${options.fontSizePx}px;font-family:${options.fontFamily};">
+      ${host.innerHTML}
+    </div>
+  </foreignObject>
+</svg>`;
+
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  } catch (error) {
+    console.warn("No se pudo generar imagen LaTeX.", error);
+    return null;
+  } finally {
+    document.body.removeChild(host);
+  }
+};
+
 const findPlaceholderIntersection = (source: string, start: number, end: number): PlaceholderMatch | null => {
   const regex = createGlobalPlaceholderRegex();
   let match: RegExpExecArray | null;
   while ((match = regex.exec(source)) !== null) {
-    const [full, id, encoded] = match;
+    const [, id, encodedSnippet, encodedData] = match;
     const matchStart = match.index;
-    const matchEnd = matchStart + full.length;
+    const matchEnd = matchStart + match[0].length;
     if (start < matchEnd && end > matchStart) {
       return {
         id,
         start: matchStart,
         end: matchEnd,
-        snippet: safeDecodeURIComponent(encoded),
+        snippet: safeDecodeURIComponent(encodedSnippet),
+        dataUrl: encodedData ? safeDecodeURIComponent(encodedData) : undefined,
       };
     }
   }
@@ -400,7 +481,7 @@ export const ThemeAttemptPage = ({
       }
       return false;
     },
-    [latexContent, openLatexEditor]
+    [latexContent, openLatexEditor, setLatexContent]
   );
 
   const handleTextareaKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
@@ -410,38 +491,7 @@ export const ThemeAttemptPage = ({
     handleEditorKeyDown(event);
   };
 
-  const handleInsertLatex = useCallback(() => {
-    if (!selectionRange) {
-      setLatexModalOpen(false);
-      setActiveLatexId(null);
-      setLatexSnippet("");
-      return;
-    }
-    const trimmed = latexSnippet.trim();
-    const before = latexContent.slice(0, selectionRange.start);
-    const after = latexContent.slice(selectionRange.end);
-    const placeholderId = activeLatexId ?? createPlaceholderId();
-    const encoded = encodeURIComponent(trimmed);
-    const placeholder = trimmed ? `{{latex|${placeholderId}|${encoded}}}` : "";
-    const nextContent = `${before}${placeholder}${after}`;
-    if (resolveLatexPlaceholders(nextContent).length > MAX_CHARS) {
-      setError("No se pudo insertar el fragmento: superas el limite de 10000 caracteres.");
-      return;
-    }
-    const cursor = before.length + placeholder.length;
-    setLatexContent(nextContent);
-    setSelectionRange(null);
-    setActiveLatexId(null);
-    setLatexSnippet("");
-    setLatexModalOpen(false);
-    setTimeout(() => {
-      const node = textareaRef.current;
-      if (!node) return;
-      node.focus();
-      node.selectionStart = cursor;
-      node.selectionEnd = cursor;
-    }, 0);
-  }, [activeLatexId, latexContent, latexSnippet, selectionRange, setLatexContent]);
+\ \ const\ handleInsertLatex\ =\ useCallback\(async\ \(\)\ =>\ \{\r\n\ \ \ \ if\ \(!selectionRange\)\ \{\r\n\ \ \ \ \ \ setLatexModalOpen\(false\);\r\n\ \ \ \ \ \ setActiveLatexId\(null\);\r\n\ \ \ \ \ \ setLatexSnippet\(""\);\r\n\ \ \ \ \ \ return;\r\n\ \ \ \ }\r\n\ \ \ \ const\ trimmed\ =\ latexSnippet\.trim\(\);\r\n\ \ \ \ const\ before\ =\ latexContent\.slice\(0,\ selectionRange\.start\);\r\n\ \ \ \ const\ after\ =\ latexContent\.slice\(selectionRange\.end\);\r\n\ \ \ \ const\ placeholderId\ =\ activeLatexId\ \?\?\ createPlaceholderId\(\);\r\n\ \ \ \ const\ encodedSnippet\ =\ encodeURIComponent\(trimmed\);\r\n\ \ \ \ let\ dataUrl:\ string\ \|\ null\ =\ null;\r\n\ \ \ \ if\ \(trimmed\)\ \{\r\n\ \ \ \ \ \ const\ reference\ =\ textareaRef\.current;\r\n\ \ \ \ \ \ const\ styles\ =\ reference\ \?\ window\.getComputedStyle\(reference\)\ :\ window\.getComputedStyle\(document\.body\);\r\n\ \ \ \ \ \ const\ color\ =\ styles\.color\ \|\|\ "\#000";\r\n\ \ \ \ \ \ const\ background\ =\ styles\.backgroundColor\ \|\|\ "transparent";\r\n\ \ \ \ \ \ const\ fontSizePx\ =\ parseFloat\(styles\.fontSize\)\ \|\|\ 16;\r\n\ \ \ \ \ \ dataUrl\ =\ await\ generateLatexImageData\(trimmed,\ \{\ color,\ background,\ fontSizePx\ }\);\r\n\ \ \ \ }\r\n\ \ \ \ const\ dataSegment\ =\ dataUrl\ \?\ `\|\$\{encodeURIComponent\(dataUrl\)}`\ :\ "";\r\n\ \ \ \ const\ placeholder\ =\ trimmed\ \?\ `\{\{latex\|\$\{placeholderId}\|\$\{encodedSnippet}\$\{dataSegment}}}`\ :\ "";\r\n\ \ \ \ const\ nextContent\ =\ `\$\{before}\$\{placeholder}\$\{after}`;\r\n\ \ \ \ if\ \(resolveLatexPlaceholders\(nextContent\)\.length\ >\ MAX_CHARS\)\ \{\r\n\ \ \ \ \ \ setError\("No\ se\ pudo\ insertar\ el\ fragmento:\ superas\ el\ limite\ de\ 10000\ caracteres\."\);\r\n\ \ \ \ \ \ return;\r\n\ \ \ \ }\r\n\ \ \ \ const\ cursor\ =\ before\.length\ \+\ placeholder\.length;\r\n\ \ \ \ setLatexContent\(nextContent\);\r\n\ \ \ \ setSelectionRange\(null\);\r\n\ \ \ \ setActiveLatexId\(null\);\r\n\ \ \ \ setLatexSnippet\(""\);\r\n\ \ \ \ setLatexModalOpen\(false\);\r\n\ \ \ \ setTimeout\(\(\)\ =>\ \{\r\n\ \ \ \ \ \ const\ node\ =\ textareaRef\.current;\r\n\ \ \ \ \ \ if\ \(!node\)\ return;\r\n\ \ \ \ \ \ node\.focus\(\);\r\n\ \ \ \ \ \ node\.selectionStart\ =\ cursor;\r\n\ \ \ \ \ \ node\.selectionEnd\ =\ cursor;\r\n\ \ \ \ },\ 0\);\r\n\ \ },\ \[activeLatexId,\ latexContent,\ latexSnippet,\ selectionRange,\ setLatexContent]\);
 
   useEffect(() => {
     if (!latexModalOpen) return;
@@ -458,7 +508,7 @@ export const ThemeAttemptPage = ({
     const handleHotkeys = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "enter") {
         event.preventDefault();
-        handleInsertLatex();
+        void handleInsertLatex();
       }
       if (event.key === "Escape") {
         event.preventDefault();
@@ -478,19 +528,57 @@ export const ThemeAttemptPage = ({
     const regex = createGlobalPlaceholderRegex();
     let match: RegExpExecArray | null;
     while ((match = regex.exec(latexContent)) !== null) {
-      const [full, id, encoded] = match;
+      const full = match[0];
+      const id = match[1];
+      const encodedSnippet = match[2];
+      const encodedData = match[3];
       const start = match.index;
       const end = start + full.length;
       if (start > lastIndex) {
-        const text = latexContent.slice(lastIndex, start);
-        nodes.push(
+        const text = latexContent.slice(lastIndex, start\
+      );
+      nodes.push(
           <span key={`text-${lastIndex}`} className="attempt-editor__preview-text">
             {text}
           </span>
         );
       }
-      const snippet = safeDecodeURIComponent(encoded);
-      const placeholderText = latexContent.slice(start, end);
+      const snippet = safeDecodeURIComponent(encodedSnippet);
+      const dataUrl = encodedData ? safeDecodeURIComponent(encodedData) : undefined;
+      const ghostElement = dataUrl ? (
+        <img
+          src={dataUrl}
+          alt=""
+          aria-hidden="true"
+          className="attempt-editor__latex-img attempt-editor__latex-img--ghost"
+          draggable={false}
+        />
+      ) : (
+        <span aria-hidden="true" className="attempt-editor__latex-render attempt-editor__latex-render--ghost">
+          <LatexRenderer
+            inline
+            className="attempt-editor__latex-render"
+            content={`\\(${snippet}\\)`}
+            fallback={snippet}
+          />
+        </span>
+      );
+      const visibleElement = dataUrl ? (
+        <img
+          src={dataUrl}
+          alt={snippet || "Expresion LaTeX"}
+          className="attempt-editor__latex-img"
+          draggable={false}
+        />
+      ) : (
+        <LatexRenderer
+          inline
+          className="attempt-editor__latex-render"
+          content={`\\(${snippet}\\)`}
+          fallback={snippet}
+        />
+      
+      );
       nodes.push(
         <span
           key={`latex-${id}-${start}`}
@@ -511,15 +599,8 @@ export const ThemeAttemptPage = ({
           tabIndex={0}
           title="Editar LaTeX"
         >
-          <span className="attempt-editor__placeholder-spacer">{placeholderText}</span>
-          <span className="attempt-editor__latex-visual">
-            <LatexRenderer
-              inline
-              className="attempt-editor__latex-render"
-              content={`\\(${snippet}\\)`}
-              fallback={snippet}
-            />
-          </span>
+          <span className="attempt-editor__placeholder-spacer">{ghostElement}</span>
+          <span className="attempt-editor__latex-visual">{visibleElement}</span>
         </span>
       );
       lastIndex = end;
@@ -531,11 +612,8 @@ export const ThemeAttemptPage = ({
         </span>
       );
     }
-    if (nodes.length === 0) {
-      return [latexContent];
-    }
     return nodes;
-  }, [latexContent, openLatexEditor]);
+  }, [latexContent, openLatexEditor, setLatexContent]);
 
   const historyIndex = 2;
   const basePanes = [
@@ -840,4 +918,21 @@ export const ThemeAttemptPage = ({
     </AppShell>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

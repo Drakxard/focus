@@ -665,15 +665,12 @@ button.ghost.danger {
 
 .attempt-editor__latex-token {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   pointer-events: auto;
   margin: 0 0.1rem;
-  padding: 0.05rem 0.35rem;
-  border-radius: 0.35rem;
-  background: var(--color-input-bg);
-  border: 1px solid var(--color-editor-border);
   cursor: pointer;
-  vertical-align: baseline;
+  vertical-align: middle;
 }
 
 .attempt-editor__latex-token:focus-visible {
@@ -684,23 +681,38 @@ button.ghost.danger {
 .attempt-editor__placeholder-spacer {
   visibility: hidden;
   pointer-events: none;
-  display: inline-block;
-  white-space: pre;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .attempt-editor__latex-visual {
   position: absolute;
-  inset: 0.05rem 0.35rem;
+  inset: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.45rem;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-editor-border);
 }
+
+.attempt-editor__latex-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.attempt-editor__latex-img--ghost {\n  opacity: 0;\n  pointer-events: none;\n}
 
 .attempt-editor__latex-render {
   display: inline-flex;
   align-items: center;
 }
+
+.attempt-editor__latex-render--ghost {\n  opacity: 0;\n  pointer-events: none;\n}
 
 .attempt-editor__latex-render .katex {
   background: transparent;
@@ -785,4 +797,7 @@ button.ghost.danger {
   justify-content: flex-end;
   gap: 0.75rem;
 }
+
+
+
 
