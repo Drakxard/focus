@@ -377,16 +377,28 @@ export const ThemeAttemptPage = ({
       }
       const editingKey =
         event.key.length === 1 ||
-        event.key === "Backspace" ||
-        event.key === "Delete" ||
         event.key === "Enter" ||
         event.key === "Tab";
-      if (!editingKey) {
-        return false;
+      if (editingKey) {
+        event.preventDefault();
+        openLatexEditor(match.id, match.start, match.end, match.snippet);
+        return true;
       }
-      event.preventDefault();
-      openLatexEditor(match.id, match.start, match.end, match.snippet);
-      return true;
+      if (event.key === "Backspace" || event.key === "Delete") {
+        event.preventDefault();
+        const before = latexContent.slice(0, match.start);
+        const after = latexContent.slice(match.end);
+        const cursor = event.key === "Backspace" ? match.start : before.length;
+        const next = `${before}${after}`;
+        setLatexContent(next);
+        setTimeout(() => {
+          const target = textareaRef.current;
+          if (!target) return;
+          target.setSelectionRange(cursor, cursor);
+        }, 0);
+        return true;
+      }
+      return false;
     },
     [latexContent, openLatexEditor]
   );
