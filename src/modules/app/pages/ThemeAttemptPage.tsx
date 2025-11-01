@@ -1,4 +1,5 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { AppShell } from "../components/Layout";
 import { LatexMathfield } from "../components/LatexMathfield";
 import { StatusBadge } from "../components/StatusBadge";
@@ -202,10 +203,14 @@ export const ThemeAttemptPage = ({
 }: ThemeAttemptPageProps) => {
   const draftId = `attempt-draft-${theme.themeId}`;
   const { value: latexContent, setValue: setLatexContent, status } = useAutosaveDraft(draftId, "");
-  const [latexMode, setLatexMode] = useState<"visual" | "code">("visual");
   const latexFontScale = useAppStore((state) => state.settings.latexFontScale ?? 1);
   const updateLatexFontScale = useAppStore((state) => state.setLatexFontScale);
   const [error, setError] = useState<string | null>(null);
+  const [latexModalOpen, setLatexModalOpen] = useState(false);
+  const [latexSnippet, setLatexSnippet] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
+  const latexFieldContainerRef = useRef<HTMLDivElement | null>(null);
 
   const submitAttempt = useCallback(() => {
     const trimmed = latexContent.trim();
@@ -217,7 +222,7 @@ export const ThemeAttemptPage = ({
     onSubmit(trimmed);
   }, [latexContent, onSubmit]);
 
-  const handleLatexChange = (next: string) => {
+  const handleContentChange = (next: string) => {
     if (next.length <= MAX_CHARS) {
       setLatexContent(next);
     }
@@ -248,16 +253,76 @@ export const ThemeAttemptPage = ({
     }
   }, [selectedAttempt, selectedAttemptId]);
 
+  const handleEditorKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "enter") {
+      event.preventDefault();
+      submitAttempt();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+      event.preventDefault();
+      const node = textareaRef.current;
+      if (!node) return;
+      setSelectionRange({ start: node.selectionStart ?? node.value.length, end: node.selectionEnd ?? node.value.length });
+      setLatexSnippet("");
+      setLatexModalOpen(true);
+    }
+  };
+
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    if (!latexModalOpen) return;
+    const timeout = window.setTimeout(() => {
+      const container = latexFieldContainerRef.current;
+      const mathField = container?.querySelector("math-field") as HTMLElement | null;
+      mathField?.focus();
+    }, 50);
+    return () => window.clearTimeout(timeout);
+  }, [latexModalOpen]);
+
+  useEffect(() => {
+    if (!latexModalOpen) return;
+    const handleHotkeys = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "enter") {
         event.preventDefault();
-        submitAttempt();
+        handleInsertLatex();
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setLatexModalOpen(false);
+        setLatexSnippet("");
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAttempt]);
+    window.addEventListener("keydown", handleHotkeys);
+    return () => window.removeEventListener("keydown", handleHotkeys);
+  }, [handleInsertLatex, latexModalOpen]);
+
+  const handleInsertLatex = useCallback(() => {
+    if (!selectionRange) {
+      setLatexModalOpen(false);
+      return;
+    }
+    const trimmed = latexSnippet.trim();
+    const before = latexContent.slice(0, selectionRange.start);
+    const after = latexContent.slice(selectionRange.end);
+    const insertion = trimmed ? trimmed : "";
+    const nextContent = `${before}${insertion}${after}`;
+    if (nextContent.length > MAX_CHARS) {
+      setError("No se pudo insertar el fragmento: superas el limite de 10000 caracteres.");
+      return;
+    }
+    const cursor = before.length + insertion.length;
+    setLatexContent(nextContent);
+    setSelectionRange(null);
+    setLatexSnippet("");
+    setLatexModalOpen(false);
+    setTimeout(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.selectionStart = cursor;
+      node.selectionEnd = cursor;
+    }, 0);
+  }, [latexContent, latexSnippet, selectionRange, setLatexContent]);
 
   const historyIndex = 2;
   const basePanes = [
@@ -292,40 +357,44 @@ export const ThemeAttemptPage = ({
                 <button
                   type="button"
                   className="ghost"
-                  onClick={() => setLatexMode((prev) => (prev === "visual" ? "code" : "visual"))}
+                  onClick={() => {
+                    const node = textareaRef.current;
+                    if (node) {
+                      setSelectionRange({
+                        start: node.selectionStart ?? node.value.length,
+                        end: node.selectionEnd ?? node.value.length,
+                      });
+                    }
+                    setLatexSnippet("");
+                    setLatexModalOpen(true);
+                  }}
                 >
-                  {latexMode === "visual" ? "Ver codigo" : "Render interactivo"}
+                  Insertar LaTeX
                 </button>
               </div>
             </div>
-            {latexMode === "visual" ? (
-              <LatexMathfield
-                className="latex-editor__mathfield"
-                value={latexContent}
-                onChange={handleLatexChange}
-                fontSizeRem={latexFontScale}
-              />
-            ) : (
-              <>
-                <label className="sr-only" htmlFor="attempt-latex">
-                  Codigo LaTeX
-                </label>
-                <AutoTextarea
-                  id="attempt-latex"
-                  value={latexContent}
-                  onChange={(event) => handleLatexChange(event.target.value)}
-                  className="text-input code latex-editor__textarea"
-                  style={{ fontSize: `${latexFontScale}rem`, minHeight: "50vh" }}
-                  maxLength={MAX_CHARS}
-                />
-              </>
-            )}
+            <label className="sr-only" htmlFor="attempt-text">
+              Texto del intento
+            </label>
+            <AutoTextarea
+              id="attempt-text"
+              ref={textareaRef}
+              value={latexContent}
+              onChange={(event) => handleContentChange(event.target.value)}
+              onKeyDown={handleEditorKeyDown}
+              className="text-input attempt-editor__textarea"
+              style={{ fontSize: `${latexFontScale}rem` }}
+              maxLength={MAX_CHARS}
+            />
           </section>
           <div className="attempt-editor__footer">
             <span className="muted">
               {latexContent.length}/{MAX_CHARS} caracteres
             </span>
-            <span className="muted attempt-editor__shortcut">Ctrl + Enter envia</span>
+            <div className="attempt-editor__shortcuts">
+              <span className="muted attempt-editor__shortcut">Ctrl + Enter envia</span>
+              <span className="muted attempt-editor__shortcut">Ctrl + L inserta LaTeX</span>
+            </div>
           </div>
           {error ? <p className="error-text">{error}</p> : null}
         </form>
@@ -507,9 +576,38 @@ export const ThemeAttemptPage = ({
           >
             {">"}
           </button>
-        </div>
+      </div>
         <div className="attempt-page__body">{currentPane.content}</div>
       </div>
+      {latexModalOpen ? (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal" ref={latexFieldContainerRef}>
+            <header className="modal__header">
+              <h3 style={{ margin: 0 }}>Insertar fragmento LaTeX</h3>
+              <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+                Escribe el bloque en LaTeX. Usa Ctrl + Enter para insertar o Escape para cancelar.
+              </p>
+            </header>
+            <LatexMathfield
+              value={latexSnippet}
+              onChange={setLatexSnippet}
+              className="modal__mathfield"
+              fontSizeRem={latexFontScale}
+            />
+            <div className="modal__actions">
+              <button type="button" className="ghost" onClick={() => {
+                setLatexModalOpen(false);
+                setLatexSnippet("");
+              }}>
+                Cancelar
+              </button>
+              <button type="button" onClick={handleInsertLatex} disabled={!latexSnippet.trim()}>
+                Insertar
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AppShell>
   );
 };
