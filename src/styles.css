@@ -670,7 +670,7 @@ button.ghost.danger {
   padding: 0.05rem 0.35rem;
   margin: 0 0.1rem;
   border-radius: 0.35rem;
-  background: var(--color-editor-accent);
+  background: var(--color-input-bg);
   border: 1px solid var(--color-editor-border);
   cursor: pointer;
   gap: 0.35rem;
@@ -679,6 +679,16 @@ button.ghost.danger {
 .attempt-editor__latex-token:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.attempt-editor__latex-render {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.attempt-editor__latex-render .katex {
+  background: transparent;
 }
 
 .attempt-page {

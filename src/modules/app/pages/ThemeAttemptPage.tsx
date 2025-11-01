@@ -417,7 +417,12 @@ export const ThemeAttemptPage = ({
           tabIndex={0}
           title="Editar LaTeX"
         >
-          <LatexRenderer inline content={`\\(${snippet}\\)`} fallback={snippet} />
+          <LatexRenderer
+            inline
+            className="attempt-editor__latex-render"
+            content={`\\(${snippet}\\)`}
+            fallback={snippet}
+          />
         </span>
       );
       lastIndex = end;
@@ -497,12 +502,12 @@ export const ThemeAttemptPage = ({
                 onKeyDown={handleEditorKeyDown}
                 onScroll={(event) => setPreviewScrollTop(event.currentTarget.scrollTop)}
                 className="text-input attempt-editor__textarea-input"
-                style={{ fontSize: `${latexFontScale}rem` }}
+                style={{ fontSize: `${latexFontScale}rem`, lineHeight: 1.5 }}
                 maxLength={MAX_CHARS}
               />
               <div
                 className="attempt-editor__preview"
-                style={{ transform: `translateY(-${previewScrollTop}px)` }}
+                style={{ transform: `translateY(-${previewScrollTop}px)`, fontSize: `${latexFontScale}rem`, lineHeight: 1.5 }}
                 aria-hidden="true"
               >
                 {previewNodes}
