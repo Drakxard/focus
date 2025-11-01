@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { AppShell } from "../components/Layout";
 import { LatexMathfield } from "../components/LatexMathfield";
 import { StatusBadge } from "../components/StatusBadge";
@@ -10,7 +10,6 @@ import { useAppStore } from "../state/appStore";
 interface ThemeAttemptPageProps {
   topic: Topic;
   theme: Theme;
-  onBack: () => void;
   onSubmit: (content: string) => void;
   onOpenReview?: (attemptId: string, feedbackId: string) => void;
   onRefreshFeedback?: (attemptId: string) => void;
@@ -196,7 +195,6 @@ const AttemptHistory = ({
 export const ThemeAttemptPage = ({
   topic,
   theme,
-  onBack,
   onSubmit,
   onOpenReview,
   onRefreshFeedback,
@@ -208,6 +206,16 @@ export const ThemeAttemptPage = ({
   const latexFontScale = useAppStore((state) => state.settings.latexFontScale ?? 1);
   const updateLatexFontScale = useAppStore((state) => state.setLatexFontScale);
   const [error, setError] = useState<string | null>(null);
+
+  const submitAttempt = useCallback(() => {
+    const trimmed = latexContent.trim();
+    if (!trimmed) {
+      setError("Expresa tu comprension antes de enviar.");
+      return;
+    }
+    setError(null);
+    onSubmit(trimmed);
+  }, [latexContent, onSubmit]);
 
   const handleLatexChange = (next: string) => {
     if (next.length <= MAX_CHARS) {
@@ -230,13 +238,7 @@ export const ThemeAttemptPage = ({
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const trimmed = latexContent.trim();
-    if (!trimmed) {
-      setError("Describe tu comprension antes de confirmar.");
-      return;
-    }
-    setError(null);
-    onSubmit(trimmed);
+    submitAttempt();
   };
 
   useEffect(() => {
@@ -246,26 +248,35 @@ export const ThemeAttemptPage = ({
     }
   }, [selectedAttempt, selectedAttemptId]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        submitAttempt();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [submitAttempt]);
+
   const historyIndex = 2;
   const basePanes = [
     {
       key: "attempt",
-      title: "Describe tu comprension",
-      description: "Cuenta con detalle lo que entiendes sobre el tema.",
+      title: "Expresa tu comprension",
+      description: "",
       content: (
-        <form className="card" onSubmit={handleSubmit}>
+        <form className="card attempt-editor" onSubmit={handleSubmit}>
           <section className="latex-editor">
             <div className="latex-editor__header">
-              <div className="latex-editor__title-group">
-                <h3 style={{ margin: 0 }}>Describe tu comprension</h3>
-              </div>
+              <h3 style={{ margin: 0 }}>Expresa tu comprension</h3>
               <div className="latex-editor__actions">
-                <div className="font-scale-control" aria-label="Ajustar tamaño de fuente">
+                <div className="font-scale-control" aria-label="Ajustar tamano de fuente">
                   <button
                     type="button"
                     className="ghost font-scale-control__button"
                     onClick={() => adjustLatexFont("decrease")}
-                    title="Reducir tamaño"
+                    title="Reducir tamano"
                   >
                     -
                   </button>
@@ -274,7 +285,7 @@ export const ThemeAttemptPage = ({
                     type="button"
                     className="ghost font-scale-control__button"
                     onClick={() => adjustLatexFont("increase")}
-                    title="Aumentar tamaño"
+                    title="Aumentar tamano"
                   >
                     +
                   </button>
@@ -293,7 +304,6 @@ export const ThemeAttemptPage = ({
                 className="latex-editor__mathfield"
                 value={latexContent}
                 onChange={handleLatexChange}
-                placeholder="Escribe directamente aqui y se renderiza automaticamente..."
                 fontSizeRem={latexFontScale}
               />
             ) : (
@@ -305,19 +315,20 @@ export const ThemeAttemptPage = ({
                   id="attempt-latex"
                   value={latexContent}
                   onChange={(event) => handleLatexChange(event.target.value)}
-                  placeholder="Escribe o pega aqui tu expresion en LaTeX..."
                   className="text-input code latex-editor__textarea"
-                  style={{ fontSize: `${latexFontScale}rem` }}
+                  style={{ fontSize: `${latexFontScale}rem`, minHeight: "50vh" }}
                   maxLength={MAX_CHARS}
                 />
               </>
             )}
           </section>
-          <div className="muted">{latexContent.length}/{MAX_CHARS} caracteres</div>
-          {error ? <p className="error-text">{error}</p> : null}
-          <div className="actions">
-            <button type="submit">Confirmar</button>
+          <div className="attempt-editor__footer">
+            <span className="muted">
+              {latexContent.length}/{MAX_CHARS} caracteres
+            </span>
+            <span className="muted attempt-editor__shortcut">Ctrl + Enter envia</span>
           </div>
+          {error ? <p className="error-text">{error}</p> : null}
         </form>
       ),
     },
@@ -457,13 +468,7 @@ export const ThemeAttemptPage = ({
 
   return (
     <AppShell
-      title={theme.title}
-      subtitle={`Asignatura: ${topic.subject}`}
-      left={
-        <button type="button" onClick={onBack}>
-          &larr; Volver
-        </button>
-      }
+      title="Expresa tu comprension"
       right={
         <div className="page-toolbar">
           <button type="button" className="ghost" onClick={onOpenSettings}>
@@ -473,32 +478,38 @@ export const ThemeAttemptPage = ({
         </div>
       }
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "1rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h2 style={{ margin: 0 }}>{currentPane.title}</h2>
-            <p className="muted" style={{ margin: 0 }}>
-              Vista {activePane + 1} de {totalPanes}. {currentPane.description}
-            </p>
+      <div className="attempt-page">
+        <div className="attempt-page__nav">
+          <button
+            type="button"
+            className="ghost"
+            onClick={goPrev}
+            disabled={activePane === 0}
+            aria-label="Panel anterior"
+            title="Panel anterior"
+          >
+            {"<"}
+          </button>
+          <div className="attempt-page__dots" aria-hidden="true">
+            {panes.map((pane, index) => (
+              <span
+                key={pane.key}
+                className={`attempt-page__dot${index === activePane ? " is-active" : ""}`}
+              />
+            ))}
           </div>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <button type="button" className="ghost" onClick={goPrev} disabled={activePane === 0}>
-              {"<-"}
-            </button>
-            <button type="button" className="ghost" onClick={goNext} disabled={activePane === totalPanes - 1}>
-              {"->"}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="ghost"
+            onClick={goNext}
+            disabled={activePane === totalPanes - 1}
+            aria-label="Panel siguiente"
+            title="Panel siguiente"
+          >
+            {">"}
+          </button>
         </div>
-        {currentPane.content}
+        <div className="attempt-page__body">{currentPane.content}</div>
       </div>
     </AppShell>
   );

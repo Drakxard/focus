@@ -482,6 +482,8 @@ button.ghost.danger {
   flex-direction: column;
   gap: 0.8rem;
   box-shadow: var(--shadow-elevated);
+  flex: 1;
+  min-height: 60vh;
 }
 
 .latex-editor__header {
@@ -506,8 +508,9 @@ button.ghost.danger {
 }
 
 .latex-editor__textarea {
-  min-height: 8rem;
-  overflow: hidden;
+  min-height: 50vh;
+  overflow: auto;
+  resize: vertical;
 }
 
 .latex-editor__mathfield {
@@ -515,8 +518,9 @@ button.ghost.danger {
   overflow: hidden;
   background: var(--color-editor-accent);
   border: 1px solid var(--color-editor-border);
-  max-height: 22rem;
   display: flex;
+  flex: 1;
+  min-height: 55vh;
 }
 
 .latex-mathfield {
@@ -524,7 +528,8 @@ button.ghost.danger {
   display: flex;
   align-items: stretch;
   justify-content: stretch;
-  min-height: 10rem;
+  flex: 1;
+  min-height: 100%;
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px var(--color-editor-border);
   background: transparent;
@@ -533,6 +538,8 @@ button.ghost.danger {
 .latex-mathfield math-field {
   flex: 1;
   width: 100%;
+  height: 100%;
+  min-height: 100%;
   display: block;
   padding: 1.2rem;
   font-size: calc(1.1rem * var(--latex-mathfield-scale, 1));
@@ -586,4 +593,67 @@ button.ghost.danger {
   color: var(--color-muted-strong);
   min-width: 3rem;
   text-align: center;
+}
+
+.attempt-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  min-height: 60vh;
+}
+
+.attempt-editor__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.attempt-editor__shortcut {
+  font-family: var(--font-mono, inherit);
+  letter-spacing: 0.02em;
+}
+
+.attempt-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.attempt-page__nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.attempt-page__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.attempt-page__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-editor-border);
+  opacity: 0.6;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.attempt-page__dot.is-active {
+  background: var(--color-accent, var(--color-primary));
+  opacity: 1;
+}
+
+.attempt-page__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }

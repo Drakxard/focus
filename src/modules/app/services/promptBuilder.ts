@@ -1,12 +1,11 @@
 import { Attempt, AttemptFeedback, ExerciseType } from "../types";
 
 interface FeedbackPromptInput {
-  themeTitle: string;
   userContent: string;
   attemptId: string;
 }
 
-export const buildFeedbackPrompt = ({ themeTitle, userContent, attemptId }: FeedbackPromptInput) => `Analiza mi comprension sobre "${themeTitle}" y devuelve exclusivamente el JSON pedido. Texto del estudiante entre comillas triples:
+export const buildFeedbackPrompt = ({ userContent, attemptId }: FeedbackPromptInput) => `Esta es mi comprension sobre el tema. Indica fallas o vacios y responde solo con el JSON solicitado. Texto del estudiante entre comillas triples:
 """
 ${userContent}
 """
@@ -21,7 +20,7 @@ Tu respuesta debe ser un JSON valido, sin texto adicional, con la siguiente estr
   ],
   "suggestion": "<plan de mejora conciso>"
 }
-No generes Markdown ni comentarios.
+No agregues comentarios ni explicaciones adicionales.
 `;
 
 interface ConceptPromptInput {

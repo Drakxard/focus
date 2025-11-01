@@ -6,18 +6,6 @@ import { DEFAULT_PROPOSITION_PROMPTS, useAppStore } from "./state/appStore";
 
 
 
-import { SubjectPage } from "./pages/SubjectPage";
-
-
-
-import { ThemesPage } from "./pages/ThemesPage";
-
-
-
-import { HomePage } from "./pages/HomePage";
-
-
-
 import { ThemeAttemptPage } from "./pages/ThemeAttemptPage";
 
 
@@ -431,7 +419,35 @@ export const App = () => {
 
 
 
-
+  const ensureDefaultEntry = useCallback(() => {
+    const sortedTopics = [...topics].sort((a, b) => {
+      const aDate = Date.parse(a.updatedAt ?? "");
+      const bDate = Date.parse(b.updatedAt ?? "");
+      if (Number.isNaN(aDate) && Number.isNaN(bDate)) return 0;
+      if (Number.isNaN(aDate)) return 1;
+      if (Number.isNaN(bDate)) return -1;
+      return bDate - aDate;
+    });
+    let topic = sortedTopics.find((item) => item.themes.length > 0) ?? sortedTopics[0];
+    if (!topic) {
+      topic = upsertTopic("General");
+    }
+    const sortedThemes = topic.themes
+      .slice()
+      .sort((a, b) => {
+        const aDate = Date.parse(a.updatedAt ?? "");
+        const bDate = Date.parse(b.updatedAt ?? "");
+        if (Number.isNaN(aDate) && Number.isNaN(bDate)) return 0;
+        if (Number.isNaN(aDate)) return 1;
+        if (Number.isNaN(bDate)) return -1;
+        return bDate - aDate;
+      });
+    let theme = sortedThemes[0];
+    if (!theme) {
+      theme = addTheme(topic.topicId, "Iteraciones");
+    }
+    return { topicId: topic.topicId, themeId: theme.themeId };
+  }, [addTheme, topics, upsertTopic]);
 
 
   const goBack = useCallback(() => {
@@ -486,12 +502,113 @@ export const App = () => {
 
 
 
-    setHistory([{ name: "home" }]);
+    const { topicId, themeId } = ensureDefaultEntry();
 
 
 
-  }, []);
+    setHistory([{ name: "attempt", topicId, themeId }]);
 
+
+
+  }, [ensureDefaultEntry]);
+
+
+
+
+
+
+  useEffect(() => {
+
+
+
+    if (!currentRoute) return;
+
+
+
+    if (
+
+
+
+      currentRoute.name === "home" ||
+
+
+
+      currentRoute.name === "subject" ||
+
+
+
+      currentRoute.name === "themes"
+
+
+
+    ) {
+
+
+
+      const { topicId, themeId } = ensureDefaultEntry();
+
+
+
+      setHistory([{ name: "attempt", topicId, themeId }]);
+
+
+
+    }
+
+
+
+  }, [currentRoute, ensureDefaultEntry]);
+
+
+
+
+
+
+  useEffect(() => {
+
+
+
+    if (!currentRoute || currentRoute.name !== "attempt") {
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const topic = topics.find((item) => item.topicId === currentRoute.topicId);
+
+
+
+    const theme = topic?.themes.find((item) => item.themeId === currentRoute.themeId);
+
+
+
+    if (topic && theme) {
+
+
+
+      return;
+
+
+
+    }
+
+
+
+    const { topicId, themeId } = ensureDefaultEntry();
+
+
+
+    replaceRoute({ name: "attempt", topicId, themeId });
+
+
+
+  }, [currentRoute, ensureDefaultEntry, replaceRoute, topics]);
 
 
 
@@ -1046,15 +1163,7 @@ export const App = () => {
 
 
 
-    const themeTitle = findTheme(topicMap.get(topicId), themeId)?.title ?? "Tema";
-
-
-
     const promptText = buildFeedbackPrompt({
-
-
-
-      themeTitle,
 
 
 
@@ -1157,8 +1266,6 @@ export const App = () => {
       incrementAttemptCycle(attempt.attemptId);
 
       const promptText = buildFeedbackPrompt({
-
-        themeTitle: theme.title,
 
         userContent: latestContent,
 
@@ -1680,10 +1787,6 @@ export const App = () => {
 
 
 
-      themeTitle: refreshed?.theme.title ?? "Tema",
-
-
-
       userContent: latestContent,
 
 
@@ -1933,194 +2036,9 @@ export const App = () => {
 
 
       case "home":
-
-
-
-        return (
-
-
-
-          <HomePage
-
-
-
-            topics={topics}
-
-
-
-            onCreateTopic={() => pushRoute({ name: "subject" })}
-
-
-
-            onOpenTheme={handleOpenTheme}
-
-
-
-            onAddTheme={handleAddThemeToTopic}
-
-
-
-            onDeleteTheme={handleDeleteThemeFromTopic}
-
-
-
-            onDeleteTopic={handleDeleteTopic}
-
-
-
-            onExportTopic={handleExportTopic}
-
-
-
-            onOpenSettings={() => setSettingsOpen(true)}
-
-
-
-          />
-
-
-
-        );
-
-
-
       case "subject":
-
-
-
-        return (
-
-
-
-          <SubjectPage
-
-
-
-            draftId={`subject-${currentRoute.topicId ?? "new"}`}
-
-
-
-            initialValue={currentRoute.topicId ? topicMap.get(currentRoute.topicId)?.subject ?? "" : drafts[`subject-${currentRoute.topicId ?? "new"}`]?.value ?? ""}
-
-
-
-            onConfirm={(subject) => handleCreateTopic(subject, currentRoute.topicId)}
-
-
-
-            onOpenSettings={() => setSettingsOpen(true)}
-
-
-
-            onBack={history.length > 1 ? goBack : undefined}
-
-
-
-          />
-
-
-
-        );
-
-
-
-      case "themes": {
-
-
-
-        const topic = topicMap.get(currentRoute.topicId);
-
-
-
-        const draftId = `themes-${currentRoute.topicId}`;
-
-
-
-        let initialThemes = topic?.themes.map((theme) => theme.title) ?? [];
-
-
-
-        const storedDraft = drafts[draftId]?.value;
-
-
-
-        if (storedDraft) {
-
-
-
-          try {
-
-
-
-            const parsed = JSON.parse(storedDraft);
-
-
-
-            if (Array.isArray(parsed)) {
-
-
-
-              initialThemes = parsed.map((item) => String(item));
-
-
-
-            }
-
-
-
-          } catch (error) {
-
-
-
-            // ignore invalid cached draft
-
-
-
-          }
-
-
-
-        }
-
-
-
-        return (
-
-
-
-          <ThemesPage
-
-
-
-            draftId={draftId}
-
-
-
-            initialThemes={initialThemes}
-
-
-
-            onConfirm={(themes) => handleConfirmThemes(currentRoute.topicId, themes)}
-
-
-
-            onOpenSettings={() => setSettingsOpen(true)}
-
-
-
-            onBack={goBack}
-
-
-
-          />
-
-
-
-        );
-
-
-
-      }
+      case "themes":
+        return null;
 
 
 
@@ -2170,11 +2088,6 @@ export const App = () => {
 
 
             theme={theme}
-
-
-
-            onBack={goBack}
-
 
 
             onSubmit={(content) => handleAttemptSubmit(topic.topicId, theme.themeId, content)}
