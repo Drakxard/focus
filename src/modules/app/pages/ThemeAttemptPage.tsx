@@ -478,6 +478,7 @@ export const ThemeAttemptPage = ({
         );
       }
       const snippet = safeDecodeURIComponent(encoded);
+      const placeholderText = latexContent.slice(start, end);
       nodes.push(
         <span
           key={`latex-${id}-${start}`}
@@ -498,14 +499,7 @@ export const ThemeAttemptPage = ({
           tabIndex={0}
           title="Editar LaTeX"
         >
-          <span className="attempt-editor__placeholder-spacer">
-            <LatexRenderer
-              inline
-              className="attempt-editor__latex-render"
-              content={`\\(${snippet}\\)`} 
-              fallback={snippet}
-            />
-          </span>
+          <span className="attempt-editor__placeholder-spacer">{placeholderText}</span>
           <span className="attempt-editor__latex-visual">
             <LatexRenderer
               inline
