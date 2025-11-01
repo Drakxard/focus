@@ -22,6 +22,13 @@ const MAX_CHARS = 10000;
 const LATEX_PLACEHOLDER_REGEX = /\{\{latex\|([^|}]+)\|([^}]+)\}\}/;
 const createGlobalPlaceholderRegex = () => new RegExp(LATEX_PLACEHOLDER_REGEX.source, "g");
 
+interface PlaceholderMatch {
+  id: string;
+  start: number;
+  end: number;
+  snippet: string;
+}
+
 const createPlaceholderId = () => {
   try {
     return crypto.randomUUID();
@@ -40,6 +47,25 @@ const safeDecodeURIComponent = (value: string) => {
 
 const resolveLatexPlaceholders = (input: string) =>
   input.replace(createGlobalPlaceholderRegex(), (_, __, encoded) => safeDecodeURIComponent(encoded));
+
+const findPlaceholderIntersection = (source: string, start: number, end: number): PlaceholderMatch | null => {
+  const regex = createGlobalPlaceholderRegex();
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(source)) !== null) {
+    const [full, id, encoded] = match;
+    const matchStart = match.index;
+    const matchEnd = matchStart + full.length;
+    if (start < matchEnd && end > matchStart) {
+      return {
+        id,
+        start: matchStart,
+        end: matchEnd,
+        snippet: safeDecodeURIComponent(encoded),
+      };
+    }
+  }
+  return null;
+};
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "Fecha desconocida";
@@ -307,6 +333,71 @@ export const ThemeAttemptPage = ({
     }
   };
 
+  const enforcePlaceholderBoundaries = useCallback(() => {
+    const node = textareaRef.current;
+    if (!node) return;
+    const start = node.selectionStart ?? 0;
+    const end = node.selectionEnd ?? start;
+    const match = findPlaceholderIntersection(latexContent, start, end);
+    if (match && start === end) {
+      const boundary = start <= match.start ? match.start : match.end;
+      node.setSelectionRange(boundary, boundary);
+    }
+  }, [latexContent]);
+
+  const openLatexEditor = useCallback(
+    (id: string, start: number, end: number, snippet: string) => {
+      setSelectionRange({ start, end });
+      setActiveLatexId(id);
+      setLatexSnippet(snippet);
+      setLatexModalOpen(true);
+    },
+    []
+  );
+
+  const handlePotentialPlaceholderEdit = useCallback(
+    (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+      const node = event.currentTarget;
+      const start = node.selectionStart ?? 0;
+      const end = node.selectionEnd ?? start;
+      let match = findPlaceholderIntersection(latexContent, start, end);
+      if (!match && start === end) {
+        if (event.key === "Backspace") {
+          match = findPlaceholderIntersection(latexContent, Math.max(0, start - 1), start);
+        } else if (event.key === "Delete") {
+          match = findPlaceholderIntersection(latexContent, start, Math.min(latexContent.length, end + 1));
+        }
+      }
+      if (!match) {
+        return false;
+      }
+      const isModifier = event.ctrlKey || event.metaKey || event.altKey;
+      if (isModifier) {
+        return false;
+      }
+      const editingKey =
+        event.key.length === 1 ||
+        event.key === "Backspace" ||
+        event.key === "Delete" ||
+        event.key === "Enter" ||
+        event.key === "Tab";
+      if (!editingKey) {
+        return false;
+      }
+      event.preventDefault();
+      openLatexEditor(match.id, match.start, match.end, match.snippet);
+      return true;
+    },
+    [latexContent, openLatexEditor]
+  );
+
+  const handleTextareaKeyDown = (event: ReactKeyboardEvent<HTMLTextAreaElement>) => {
+    if (handlePotentialPlaceholderEdit(event)) {
+      return;
+    }
+    handleEditorKeyDown(event);
+  };
+
   const handleInsertLatex = useCallback(() => {
     if (!selectionRange) {
       setLatexModalOpen(false);
@@ -339,16 +430,6 @@ export const ThemeAttemptPage = ({
       node.selectionEnd = cursor;
     }, 0);
   }, [activeLatexId, latexContent, latexSnippet, selectionRange, setLatexContent]);
-
-  const openLatexEditor = useCallback(
-    (id: string, start: number, end: number, snippet: string) => {
-      setSelectionRange({ start, end });
-      setActiveLatexId(id);
-      setLatexSnippet(snippet);
-      setLatexModalOpen(true);
-    },
-    []
-  );
 
   useEffect(() => {
     if (!latexModalOpen) return;
@@ -499,8 +580,10 @@ export const ThemeAttemptPage = ({
                 ref={textareaRef}
                 value={latexContent}
                 onChange={(event) => handleContentChange(event.target.value)}
-                onKeyDown={handleEditorKeyDown}
+                onKeyDown={handleTextareaKeyDown}
                 onScroll={(event) => setPreviewScrollTop(event.currentTarget.scrollTop)}
+                onSelect={enforcePlaceholderBoundaries}
+                onClick={enforcePlaceholderBoundaries}
                 className="text-input attempt-editor__textarea-input"
                 style={{ fontSize: `${latexFontScale}rem`, lineHeight: 1.5 }}
                 maxLength={MAX_CHARS}
