@@ -578,9 +578,8 @@ export const ThemeAttemptPage = ({
       const start = match.index;
       const end = start + full.length;
       if (start > lastIndex) {
-        const text = latexContent.slice(lastIndex, start\
-      );
-      nodes.push(
+        const text = latexContent.slice(lastIndex, start);
+        nodes.push(
           <span key={`text-${lastIndex}`} className="attempt-editor__preview-text">
             {text}
           </span>
