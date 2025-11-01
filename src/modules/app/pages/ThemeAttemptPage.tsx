@@ -269,33 +269,6 @@ export const ThemeAttemptPage = ({
     }
   };
 
-  useEffect(() => {
-    if (!latexModalOpen) return;
-    const timeout = window.setTimeout(() => {
-      const container = latexFieldContainerRef.current;
-      const mathField = container?.querySelector("math-field") as HTMLElement | null;
-      mathField?.focus();
-    }, 50);
-    return () => window.clearTimeout(timeout);
-  }, [latexModalOpen]);
-
-  useEffect(() => {
-    if (!latexModalOpen) return;
-    const handleHotkeys = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "enter") {
-        event.preventDefault();
-        handleInsertLatex();
-      }
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setLatexModalOpen(false);
-        setLatexSnippet("");
-      }
-    };
-    window.addEventListener("keydown", handleHotkeys);
-    return () => window.removeEventListener("keydown", handleHotkeys);
-  }, [handleInsertLatex, latexModalOpen]);
-
   const handleInsertLatex = useCallback(() => {
     if (!selectionRange) {
       setLatexModalOpen(false);
@@ -323,6 +296,33 @@ export const ThemeAttemptPage = ({
       node.selectionEnd = cursor;
     }, 0);
   }, [latexContent, latexSnippet, selectionRange, setLatexContent]);
+
+  useEffect(() => {
+    if (!latexModalOpen) return;
+    const timeout = window.setTimeout(() => {
+      const container = latexFieldContainerRef.current;
+      const mathField = container?.querySelector("math-field") as HTMLElement | null;
+      mathField?.focus();
+    }, 50);
+    return () => window.clearTimeout(timeout);
+  }, [latexModalOpen]);
+
+  useEffect(() => {
+    if (!latexModalOpen) return;
+    const handleHotkeys = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "enter") {
+        event.preventDefault();
+        handleInsertLatex();
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setLatexModalOpen(false);
+        setLatexSnippet("");
+      }
+    };
+    window.addEventListener("keydown", handleHotkeys);
+    return () => window.removeEventListener("keydown", handleHotkeys);
+  }, [handleInsertLatex, latexModalOpen]);
 
   const historyIndex = 2;
   const basePanes = [
