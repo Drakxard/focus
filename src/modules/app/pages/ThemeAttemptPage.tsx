@@ -269,7 +269,6 @@ export const ThemeAttemptPage = ({
         <form className="card attempt-editor" onSubmit={handleSubmit}>
           <section className="latex-editor">
             <div className="latex-editor__header">
-              <h3 style={{ margin: 0 }}>Expresa tu comprension</h3>
               <div className="latex-editor__actions">
                 <div className="font-scale-control" aria-label="Ajustar tamano de fuente">
                   <button
