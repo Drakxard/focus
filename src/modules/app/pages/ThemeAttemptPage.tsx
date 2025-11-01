@@ -1,7 +1,8 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { AppShell } from "../components/Layout";
 import { LatexMathfield } from "../components/LatexMathfield";
+import { LatexRenderer } from "../components/LatexRenderer";
 import { StatusBadge } from "../components/StatusBadge";
 import { AutoTextarea } from "../components/AutoTextarea";
 import { useAutosaveDraft } from "../hooks/useAutosaveDraft";
@@ -18,6 +19,27 @@ interface ThemeAttemptPageProps {
 }
 
 const MAX_CHARS = 10000;
+const LATEX_PLACEHOLDER_REGEX = /\{\{latex\|([^|}]+)\|([^}]+)\}\}/;
+const createGlobalPlaceholderRegex = () => new RegExp(LATEX_PLACEHOLDER_REGEX.source, "g");
+
+const createPlaceholderId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `latex-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+};
+
+const safeDecodeURIComponent = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const resolveLatexPlaceholders = (input: string) =>
+  input.replace(createGlobalPlaceholderRegex(), (_, __, encoded) => safeDecodeURIComponent(encoded));
 
 const formatDateTime = (iso?: string) => {
   if (!iso) return "Fecha desconocida";
@@ -211,20 +233,27 @@ export const ThemeAttemptPage = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [selectionRange, setSelectionRange] = useState<{ start: number; end: number } | null>(null);
   const latexFieldContainerRef = useRef<HTMLDivElement | null>(null);
+  const [activeLatexId, setActiveLatexId] = useState<string | null>(null);
+  const [previewScrollTop, setPreviewScrollTop] = useState(0);
+  const resolvedCharCount = useMemo(
+    () => resolveLatexPlaceholders(latexContent).length,
+    [latexContent]
+  );
 
   const submitAttempt = useCallback(() => {
-    const trimmed = latexContent.trim();
-    if (!trimmed) {
+    const resolved = resolveLatexPlaceholders(latexContent).trim();
+    if (!resolved) {
       setError("Expresa tu comprension antes de enviar.");
       return;
     }
     setError(null);
-    onSubmit(trimmed);
+    onSubmit(resolved);
   }, [latexContent, onSubmit]);
 
   const handleContentChange = (next: string) => {
-    if (next.length <= MAX_CHARS) {
+    if (resolveLatexPlaceholders(next).length <= MAX_CHARS) {
       setLatexContent(next);
+      setError(null);
     }
   };
 
@@ -264,7 +293,16 @@ export const ThemeAttemptPage = ({
       const node = textareaRef.current;
       if (!node) return;
       setSelectionRange({ start: node.selectionStart ?? node.value.length, end: node.selectionEnd ?? node.value.length });
-      setLatexSnippet("");
+      const selected = node.value.slice(node.selectionStart ?? 0, node.selectionEnd ?? 0);
+      const placeholderMatch = selected.match(LATEX_PLACEHOLDER_REGEX);
+      if (placeholderMatch) {
+        const [, existingId, encoded] = placeholderMatch;
+        setActiveLatexId(existingId);
+        setLatexSnippet(safeDecodeURIComponent(encoded));
+      } else {
+        setActiveLatexId(null);
+        setLatexSnippet(selected.trim());
+      }
       setLatexModalOpen(true);
     }
   };
@@ -272,20 +310,25 @@ export const ThemeAttemptPage = ({
   const handleInsertLatex = useCallback(() => {
     if (!selectionRange) {
       setLatexModalOpen(false);
+      setActiveLatexId(null);
+      setLatexSnippet("");
       return;
     }
     const trimmed = latexSnippet.trim();
     const before = latexContent.slice(0, selectionRange.start);
     const after = latexContent.slice(selectionRange.end);
-    const insertion = trimmed ? trimmed : "";
-    const nextContent = `${before}${insertion}${after}`;
-    if (nextContent.length > MAX_CHARS) {
+    const placeholderId = activeLatexId ?? createPlaceholderId();
+    const encoded = encodeURIComponent(trimmed);
+    const placeholder = trimmed ? `{{latex|${placeholderId}|${encoded}}}` : "";
+    const nextContent = `${before}${placeholder}${after}`;
+    if (resolveLatexPlaceholders(nextContent).length > MAX_CHARS) {
       setError("No se pudo insertar el fragmento: superas el limite de 10000 caracteres.");
       return;
     }
-    const cursor = before.length + insertion.length;
+    const cursor = before.length + placeholder.length;
     setLatexContent(nextContent);
     setSelectionRange(null);
+    setActiveLatexId(null);
     setLatexSnippet("");
     setLatexModalOpen(false);
     setTimeout(() => {
@@ -295,7 +338,17 @@ export const ThemeAttemptPage = ({
       node.selectionStart = cursor;
       node.selectionEnd = cursor;
     }, 0);
-  }, [latexContent, latexSnippet, selectionRange, setLatexContent]);
+  }, [activeLatexId, latexContent, latexSnippet, selectionRange, setLatexContent]);
+
+  const openLatexEditor = useCallback(
+    (id: string, start: number, end: number, snippet: string) => {
+      setSelectionRange({ start, end });
+      setActiveLatexId(id);
+      setLatexSnippet(snippet);
+      setLatexModalOpen(true);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!latexModalOpen) return;
@@ -317,12 +370,70 @@ export const ThemeAttemptPage = ({
       if (event.key === "Escape") {
         event.preventDefault();
         setLatexModalOpen(false);
+        setActiveLatexId(null);
+        setSelectionRange(null);
         setLatexSnippet("");
       }
     };
     window.addEventListener("keydown", handleHotkeys);
     return () => window.removeEventListener("keydown", handleHotkeys);
   }, [handleInsertLatex, latexModalOpen]);
+
+  const previewNodes = useMemo(() => {
+    const nodes: ReactNode[] = [];
+    let lastIndex = 0;
+    const regex = createGlobalPlaceholderRegex();
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(latexContent)) !== null) {
+      const [full, id, encoded] = match;
+      const start = match.index;
+      const end = start + full.length;
+      if (start > lastIndex) {
+        const text = latexContent.slice(lastIndex, start);
+        nodes.push(
+          <span key={`text-${lastIndex}`} className="attempt-editor__preview-text">
+            {text}
+          </span>
+        );
+      }
+      const snippet = safeDecodeURIComponent(encoded);
+      nodes.push(
+        <span
+          key={`latex-${id}-${start}`}
+          className="attempt-editor__latex-token"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => {
+            event.preventDefault();
+            openLatexEditor(id, start, end, snippet);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openLatexEditor(id, start, end, snippet);
+            }
+          }}
+          role="button"
+          aria-label="Editar fragmento LaTeX"
+          tabIndex={0}
+          title="Editar LaTeX"
+        >
+          <LatexRenderer inline content={`\\(${snippet}\\)`} fallback={snippet} />
+        </span>
+      );
+      lastIndex = end;
+    }
+    if (lastIndex < latexContent.length) {
+      nodes.push(
+        <span key={`text-tail`} className="attempt-editor__preview-text">
+          {latexContent.slice(lastIndex)}
+        </span>
+      );
+    }
+    if (nodes.length === 0) {
+      return [latexContent];
+    }
+    return nodes;
+  }, [latexContent, openLatexEditor]);
 
   const historyIndex = 2;
   const basePanes = [
@@ -365,6 +476,7 @@ export const ThemeAttemptPage = ({
                         end: node.selectionEnd ?? node.value.length,
                       });
                     }
+                    setActiveLatexId(null);
                     setLatexSnippet("");
                     setLatexModalOpen(true);
                   }}
@@ -376,20 +488,30 @@ export const ThemeAttemptPage = ({
             <label className="sr-only" htmlFor="attempt-text">
               Texto del intento
             </label>
-            <AutoTextarea
-              id="attempt-text"
-              ref={textareaRef}
-              value={latexContent}
-              onChange={(event) => handleContentChange(event.target.value)}
-              onKeyDown={handleEditorKeyDown}
-              className="text-input attempt-editor__textarea"
-              style={{ fontSize: `${latexFontScale}rem` }}
-              maxLength={MAX_CHARS}
-            />
+            <div className="attempt-editor__textarea-wrapper">
+              <AutoTextarea
+                id="attempt-text"
+                ref={textareaRef}
+                value={latexContent}
+                onChange={(event) => handleContentChange(event.target.value)}
+                onKeyDown={handleEditorKeyDown}
+                onScroll={(event) => setPreviewScrollTop(event.currentTarget.scrollTop)}
+                className="text-input attempt-editor__textarea-input"
+                style={{ fontSize: `${latexFontScale}rem` }}
+                maxLength={MAX_CHARS}
+              />
+              <div
+                className="attempt-editor__preview"
+                style={{ transform: `translateY(-${previewScrollTop}px)` }}
+                aria-hidden="true"
+              >
+                {previewNodes}
+              </div>
+            </div>
           </section>
           <div className="attempt-editor__footer">
             <span className="muted">
-              {latexContent.length}/{MAX_CHARS} caracteres
+              {resolvedCharCount}/{MAX_CHARS} caracteres
             </span>
             <div className="attempt-editor__shortcuts">
               <span className="muted attempt-editor__shortcut">Ctrl + Enter envia</span>
@@ -597,6 +719,8 @@ export const ThemeAttemptPage = ({
             <div className="modal__actions">
               <button type="button" className="ghost" onClick={() => {
                 setLatexModalOpen(false);
+                setActiveLatexId(null);
+                setSelectionRange(null);
                 setLatexSnippet("");
               }}>
                 Cancelar

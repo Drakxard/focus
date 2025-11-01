@@ -624,9 +624,61 @@ button.ghost.danger {
   letter-spacing: 0.02em;
 }
 
-.attempt-editor__textarea {
+.attempt-editor__textarea-wrapper {
+  position: relative;
+  min-height: 55vh;
+}
+
+.attempt-editor__textarea-input {
   min-height: 55vh;
   resize: vertical;
+  background: transparent;
+  color: transparent;
+  text-shadow: none;
+  caret-color: var(--color-text-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.attempt-editor__textarea-input::selection {
+  background: var(--color-selection);
+}
+
+.attempt-editor__preview {
+  position: absolute;
+  inset: 0;
+  padding: 0.75rem;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font: inherit;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  z-index: 2;
+  will-change: transform;
+}
+
+.attempt-editor__preview-text {
+  pointer-events: none;
+}
+
+.attempt-editor__latex-token {
+  display: inline-flex;
+  align-items: center;
+  pointer-events: auto;
+  padding: 0.05rem 0.35rem;
+  margin: 0 0.1rem;
+  border-radius: 0.35rem;
+  background: var(--color-editor-accent);
+  border: 1px solid var(--color-editor-border);
+  cursor: pointer;
+  gap: 0.35rem;
+}
+
+.attempt-editor__latex-token:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .attempt-page {
