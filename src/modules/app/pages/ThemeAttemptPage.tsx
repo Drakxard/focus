@@ -491,7 +491,49 @@ export const ThemeAttemptPage = ({
     handleEditorKeyDown(event);
   };
 
-\ \ const\ handleInsertLatex\ =\ useCallback\(async\ \(\)\ =>\ \{\r\n\ \ \ \ if\ \(!selectionRange\)\ \{\r\n\ \ \ \ \ \ setLatexModalOpen\(false\);\r\n\ \ \ \ \ \ setActiveLatexId\(null\);\r\n\ \ \ \ \ \ setLatexSnippet\(""\);\r\n\ \ \ \ \ \ return;\r\n\ \ \ \ }\r\n\ \ \ \ const\ trimmed\ =\ latexSnippet\.trim\(\);\r\n\ \ \ \ const\ before\ =\ latexContent\.slice\(0,\ selectionRange\.start\);\r\n\ \ \ \ const\ after\ =\ latexContent\.slice\(selectionRange\.end\);\r\n\ \ \ \ const\ placeholderId\ =\ activeLatexId\ \?\?\ createPlaceholderId\(\);\r\n\ \ \ \ const\ encodedSnippet\ =\ encodeURIComponent\(trimmed\);\r\n\ \ \ \ let\ dataUrl:\ string\ \|\ null\ =\ null;\r\n\ \ \ \ if\ \(trimmed\)\ \{\r\n\ \ \ \ \ \ const\ reference\ =\ textareaRef\.current;\r\n\ \ \ \ \ \ const\ styles\ =\ reference\ \?\ window\.getComputedStyle\(reference\)\ :\ window\.getComputedStyle\(document\.body\);\r\n\ \ \ \ \ \ const\ color\ =\ styles\.color\ \|\|\ "\#000";\r\n\ \ \ \ \ \ const\ background\ =\ styles\.backgroundColor\ \|\|\ "transparent";\r\n\ \ \ \ \ \ const\ fontSizePx\ =\ parseFloat\(styles\.fontSize\)\ \|\|\ 16;\r\n\ \ \ \ \ \ dataUrl\ =\ await\ generateLatexImageData\(trimmed,\ \{\ color,\ background,\ fontSizePx\ }\);\r\n\ \ \ \ }\r\n\ \ \ \ const\ dataSegment\ =\ dataUrl\ \?\ `\|\$\{encodeURIComponent\(dataUrl\)}`\ :\ "";\r\n\ \ \ \ const\ placeholder\ =\ trimmed\ \?\ `\{\{latex\|\$\{placeholderId}\|\$\{encodedSnippet}\$\{dataSegment}}}`\ :\ "";\r\n\ \ \ \ const\ nextContent\ =\ `\$\{before}\$\{placeholder}\$\{after}`;\r\n\ \ \ \ if\ \(resolveLatexPlaceholders\(nextContent\)\.length\ >\ MAX_CHARS\)\ \{\r\n\ \ \ \ \ \ setError\("No\ se\ pudo\ insertar\ el\ fragmento:\ superas\ el\ limite\ de\ 10000\ caracteres\."\);\r\n\ \ \ \ \ \ return;\r\n\ \ \ \ }\r\n\ \ \ \ const\ cursor\ =\ before\.length\ \+\ placeholder\.length;\r\n\ \ \ \ setLatexContent\(nextContent\);\r\n\ \ \ \ setSelectionRange\(null\);\r\n\ \ \ \ setActiveLatexId\(null\);\r\n\ \ \ \ setLatexSnippet\(""\);\r\n\ \ \ \ setLatexModalOpen\(false\);\r\n\ \ \ \ setTimeout\(\(\)\ =>\ \{\r\n\ \ \ \ \ \ const\ node\ =\ textareaRef\.current;\r\n\ \ \ \ \ \ if\ \(!node\)\ return;\r\n\ \ \ \ \ \ node\.focus\(\);\r\n\ \ \ \ \ \ node\.selectionStart\ =\ cursor;\r\n\ \ \ \ \ \ node\.selectionEnd\ =\ cursor;\r\n\ \ \ \ },\ 0\);\r\n\ \ },\ \[activeLatexId,\ latexContent,\ latexSnippet,\ selectionRange,\ setLatexContent]\);
+  const handleInsertLatex = useCallback(async () => {
+    if (!selectionRange) {
+      setLatexModalOpen(false);
+      setActiveLatexId(null);
+      setLatexSnippet("");
+      return;
+    }
+    const trimmed = latexSnippet.trim();
+    const before = latexContent.slice(0, selectionRange.start);
+    const after = latexContent.slice(selectionRange.end);
+    const placeholderId = activeLatexId ?? createPlaceholderId();
+    const encodedSnippet = encodeURIComponent(trimmed);
+    let dataUrl: string | null = null;
+    if (trimmed) {
+      const reference = textareaRef.current;
+      const styles = reference ? window.getComputedStyle(reference) : window.getComputedStyle(document.body);
+      const color = styles.color || "#000";
+      const background = styles.backgroundColor || "transparent";
+      const fontSizePx = parseFloat(styles.fontSize) || 16;
+      const fontFamily = styles.fontFamily || "inherit";
+      dataUrl = await generateLatexImageData(trimmed, { color, background, fontSizePx, fontFamily });
+    }
+    const dataSegment = dataUrl ? `|${encodeURIComponent(dataUrl)}` : "";
+    const placeholder = trimmed ? `{{latex|${placeholderId}|${encodedSnippet}${dataSegment}}}` : "";
+    const nextContent = `${before}${placeholder}${after}`;
+    if (resolveLatexPlaceholders(nextContent).length > MAX_CHARS) {
+      setError("No se pudo insertar el fragmento: superas el limite de 10000 caracteres.");
+      return;
+    }
+    const cursor = before.length + placeholder.length;
+    setLatexContent(nextContent);
+    setSelectionRange(null);
+    setActiveLatexId(null);
+    setLatexSnippet("");
+    setLatexModalOpen(false);
+    setTimeout(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.selectionStart = cursor;
+      node.selectionEnd = cursor;
+    }, 0);
+  }, [activeLatexId, latexContent, latexSnippet, selectionRange, setLatexContent]);
 
   useEffect(() => {
     if (!latexModalOpen) return;
@@ -521,6 +563,7 @@ export const ThemeAttemptPage = ({
     window.addEventListener("keydown", handleHotkeys);
     return () => window.removeEventListener("keydown", handleHotkeys);
   }, [handleInsertLatex, latexModalOpen]);
+
 
   const previewNodes = useMemo(() => {
     const nodes: ReactNode[] = [];
