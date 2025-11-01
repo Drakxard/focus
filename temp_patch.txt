@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: src/styles.css
+@@
+ .attempt-editor__latex-visual {
+   position: absolute;
+   inset: 0.05rem 0.35rem;
+   display: inline-flex;
+   align-items: center;
+-  justify-content: center;
++  justify-content: flex-end;
+   pointer-events: none;
+ }
+*** End Patch
+

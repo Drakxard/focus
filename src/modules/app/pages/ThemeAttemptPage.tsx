@@ -478,6 +478,7 @@ export const ThemeAttemptPage = ({
         );
       }
       const snippet = safeDecodeURIComponent(encoded);
+      const placeholderText = latexContent.slice(start, end);
       nodes.push(
         <span
           key={`latex-${id}-${start}`}
@@ -498,12 +499,15 @@ export const ThemeAttemptPage = ({
           tabIndex={0}
           title="Editar LaTeX"
         >
-          <LatexRenderer
-            inline
-            className="attempt-editor__latex-render"
-            content={`\\(${snippet}\\)`}
-            fallback={snippet}
-          />
+          <span className="attempt-editor__placeholder-spacer">{placeholderText}</span>
+          <span className="attempt-editor__latex-visual">
+            <LatexRenderer
+              inline
+              className="attempt-editor__latex-render"
+              content={`\\(${snippet}\\)`}
+              fallback={snippet}
+            />
+          </span>
         </span>
       );
       lastIndex = end;
@@ -584,6 +588,7 @@ export const ThemeAttemptPage = ({
                 onScroll={(event) => setPreviewScrollTop(event.currentTarget.scrollTop)}
                 onSelect={enforcePlaceholderBoundaries}
                 onClick={enforcePlaceholderBoundaries}
+                onKeyUp={enforcePlaceholderBoundaries}
                 className="text-input attempt-editor__textarea-input"
                 style={{ fontSize: `${latexFontScale}rem`, lineHeight: 1.5 }}
                 maxLength={MAX_CHARS}
